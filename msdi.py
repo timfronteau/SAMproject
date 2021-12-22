@@ -24,18 +24,18 @@ class Msdi():
         """ set = {'all','train','test','val'} """
         assert type(set) == str, "set argument = 'all', 'train', 'test' or 'val'"
         print("Loading "+ set +" MFCC ...")
-        mfcc_idx = self.df.index.values.tolist()
-        mfcc_path = Path(self.msdi_path) / self.df['mfcc']
-        res = []
-        for (idx,p) in zip(mfcc_idx, mfcc_path):
-            entry = self.df.loc[idx]
-            if entry['set'] == set :
-                x = np.load(p)
-                a = np.mean(x[entry['msd_track_id']], axis=0)
-                res.append(a)
-        n = len(res)
-        m = np.shape(res[0])        
-        res = np.array(res, dtype=float).reshape(n,m[0],m[1],1)
+        dataset = self.df.loc[(self.df['set']==set)]
+        res = [np.load(Path(self.msdi_path) / mfcc)[msd_track_id] for (mfcc,msd_track_id) in zip(dataset['mfcc'], dataset['msd_track_id'])]
+        return res
+
+    def load_deep_audio_features(self, set):
+        """ set = {'all','train','test','val'} """
+        assert type(set) == str, "set argument = 'all', 'train', 'test' or 'val'"
+        print("Loading "+ set +" deep audio features ...")
+        subset_file = 'X_{}_audio_MSD-I.npy'.format(set)
+        x = np.load(Path(self.msdi_path) / 'deep_features' / subset_file, mmap_mode='r')
+        deep_features_idx = self.df.loc[(self.df['set']==set)]['deep_features'].tolist()
+        res = x[deep_features_idx, :]
         return res
 
     def get_label(self, set = 'all'):
