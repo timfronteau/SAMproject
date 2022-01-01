@@ -30,6 +30,12 @@ class DataReader():
         print(np.shape(X))
         return X
 
+    def __get_img_feat(self,set):
+        #Done
+        X = self.msdi.load_img(set)
+        print(np.shape(X))
+        return X
+
     # MFCC features
     def get_train_data(self):
         return self.__get_feat('train'), self.__get_target('train')  
@@ -48,4 +54,17 @@ class DataReader():
         return self.__get_deep_feat('val'), self.__get_target('val')  
     
     def get_test_deep_features(self):
-        return self.__get_deep_feat('test'), self.__get_target('test')  
+        return self.__get_deep_feat('test'), self.__get_target('test')
+
+    # Image Features
+    def get_train_img_features(self):
+        #Done
+        return self.__get_img_feat('train'), self.__get_target('train')
+
+    def get_val_img_features(self):
+        #Done
+        return self.__get_img_feat('val'), self.__get_target('val')
+
+    def get_test_img_features(self):
+        #Done
+        return self.__get_img_feat('test'), self.__get_target('test')

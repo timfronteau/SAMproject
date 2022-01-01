@@ -1,6 +1,7 @@
 from pathlib import Path
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 class Msdi():
@@ -36,6 +37,15 @@ class Msdi():
         x = np.load(Path(self.msdi_path) / 'deep_features' / subset_file, mmap_mode='r')
         deep_features_idx = self.df.loc[(self.df['set']==set)]['deep_features'].tolist()
         res = x[deep_features_idx, :]
+        return res
+
+    def load_img(self, set = 'all'):
+        #Done
+        """ set = {'all','train','test','val'} """
+        assert type(set) == str, "set argument = 'all', 'train', 'test' or 'val'"
+        print("Loading "+ set +" images ...")
+        dataset = self.df.loc[(self.df['set']==set)]
+        res = [plt.imread(Path(self.msdi_path) / img) for img in dataset['img']]
         return res
 
     def get_label(self, set = 'all'):
