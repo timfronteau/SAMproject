@@ -8,13 +8,14 @@ from entry import Entry
 from dataReader import DataReader
 from baseline_model import Baseline
 
-BATCH_SIZE = 128
+BATCH_SIZE = 16
 EPOCHS = 10
 NB_ITERATIONS = 9
 
 GET_AND_SAVE_DATA = False
 DATASET_PATH = 'baseline_img.npz'
-MODEL_DIR = 'img_model' # 'deep_model'
+MODEL_DIR = 'img_model_dense'  # 'deep_model'
+INPUT_SHAPE = (200, 200, 3) # 2048
 
 if __name__ =='__main__':
     print("Getting data ...")
@@ -69,9 +70,9 @@ if __name__ =='__main__':
 
     print("Building model ...")
     baseline = Baseline(X_train, X_val, X_test, y_train, y_val, y_test,
-                        data.nb_of_label, batch_size=BATCH_SIZE, epochs=EPOCHS, input_shape=(200, 200, 3))
+                        data.nb_of_label, batch_size=BATCH_SIZE, epochs=EPOCHS, input_shape=INPUT_SHAPE)
 
-    if DATASET_PATH=='baseline_img.npz':
+    if MODEL_DIR=='img_model_conv':
         baseline.build_conv_model()
     else:
         baseline.build_model()

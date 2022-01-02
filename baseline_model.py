@@ -4,14 +4,14 @@ from keras import Input
 import numpy as np
 
 class Baseline():
-    def __init__(self,X_train, X_val, X_test, y_train, y_val, y_test, nb_of_label, batch_size=16, epochs=10, input_shape=(200, 200, 3)):
+    def __init__(self,X_train, X_val, X_test, y_train, y_val, y_test, nb_of_label, batch_size=16, epochs=10, input_shape=2048):
         self.X_train = X_train
         self.X_val = X_val
         self.X_test = X_test
         self.y_train = y_train
         self.y_val = y_val
         self.y_test = y_test
-        self.nb_feat = 2048
+        # self.nb_feat = 2048
         self.input_shape = input_shape
         self.nb_of_label = nb_of_label
         self.model = Sequential()
@@ -20,8 +20,11 @@ class Baseline():
 
     def build_model(self):
         m = Sequential()        
-        m.add(Input(shape=self.nb_feat))
-        m.add(Dense(self.nb_feat, activation='relu'))
+        m.add(Input(shape=self.input_shape))
+        if type(self.input_shape) == tuple:
+            m.add(MaxPooling2D((4, 4)))
+            m.add(Flatten())
+        m.add(Dense(2048, activation='relu'))
         m.add(Dropout(0.05))
         m.add(Dense(1024, activation='relu'))
         m.add(Dropout(0.05))
