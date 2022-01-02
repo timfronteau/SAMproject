@@ -3,6 +3,10 @@ deep_model
 maps_composers
 msdi
 msdi_img
+spectrogram
+wavelets
+*.pkl
+*.cpkt*
 
 #desktop.ini
 *.desktop.ini

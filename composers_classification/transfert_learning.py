@@ -20,6 +20,7 @@ labels = [a for a in os.listdir('maps_composers') if '.' not in a]
 img_size = 256
 EPOCHS = 100
 
+
 def get_data(data_dir):
     data = [] 
     for label in labels: 
@@ -60,7 +61,6 @@ y_train = np.array(y_train)
 x_val.reshape(-1, img_size, img_size, 1)
 y_val = np.array(y_val)
 
-
 datagen = ImageDataGenerator(
         featurewise_center=False,  # set input mean to 0 over the dataset
         samplewise_center=False,  # set each sample mean to 0
@@ -77,37 +77,32 @@ datagen = ImageDataGenerator(
 
 datagen.fit(x_train)
 
-model = Sequential()
-model.add(Conv2D(32,3,padding="same", activation="relu", input_shape=(256,256,3)))
-model.add(MaxPool2D())
+base_model = tf.keras.applications.MobileNetV2(input_shape = (256, 256, 3), include_top = False, weights = "imagenet")
+base_model.trainable = False
+model = tf.keras.Sequential([base_model,
+                                 tf.keras.layers.GlobalAveragePooling2D(),
+                                 tf.keras.layers.Dropout(0.2),
+                                 tf.keras.layers.Dense(4, activation="softmax")                                     
+                                ])
 
-model.add(Conv2D(32, 3, padding="same", activation="relu"))
-model.add(MaxPool2D())
+base_learning_rate = 0.0001
+model.compile(optimizer=tf.keras.optimizers.Adam(lr=base_learning_rate),
+              loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+              metrics=['accuracy'])
 
-model.add(Conv2D(64, 3, padding="same", activation="relu"))
-model.add(MaxPool2D())
-model.add(Dropout(0.4))
-
-model.add(Flatten())
-model.add(Dense(128,activation="relu"))
-model.add(Dense(4, activation="softmax"))
+history_tr = model.fit(x_train,y_train,epochs = EPOCHS , validation_data = (x_val, y_val))
 
 model.summary()
 
-opt = Adam(lr=0.0001)
-model.compile(optimizer = opt , loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True) , metrics = ['accuracy'])
-
-history = model.fit(x_train,y_train,epochs = EPOCHS, validation_data = (x_val, y_val))
-
 import pickle
-model.save_weights(f'{EPOCHS}_epoch_simple_lr.cpkt')
+model.save_weights(f'{EPOCHS}_epoch_tr_lr.cpkt')
 
-pickle.dump(history.history, open(f'history_{EPOCHS}_epoch_simple.pkl','wb'))
+pickle.dump(history_tr.history, open(f'history_{EPOCHS}_epoch_tr.pkl','wb'))
 
-acc = history.history['accuracy']
-val_acc = history.history['val_accuracy']
-loss = history.history['loss']
-val_loss = history.history['val_loss']
+acc = history_tr.history['accuracy']
+val_acc = history_tr.history['val_accuracy']
+loss = history_tr.history['loss']
+val_loss = history_tr.history['val_loss']
 
 epochs_range = range(EPOCHS)
 
@@ -125,9 +120,8 @@ plt.legend(loc='upper right')
 plt.title('Training and Validation Loss')
 plt.show()
 
-
 import pickle
-history = pickle.load(open(f'history_{EPOCHS}_epoch_simple.pkl','rb'))
+history = pickle.load(open(f'history_{EPOCHS}_epoch_tr.pkl','rb'))
 acc = history['accuracy']
 val_acc = history['val_accuracy']
 loss = history['loss']
@@ -152,12 +146,11 @@ ax2.set_ylabel('Loss',fontsize=18)
 ax2.set_xlabel('Epoch',fontsize=18)
 fig.tight_layout(pad=3.0)
 #plt.show()
-plt.savefig('sim_plot1.png',bbox_inches = 'tight')
+plt.savefig('tfr_plot1.png',bbox_inches = 'tight')
 plt.clf()
 
-
 predictions = np.argmax(model.predict(x_val), axis=1)
-predictions = predictions.reshape((1,-1))[0]
+predictions = predictions.reshape(1,-1)[0]
 print(classification_report(y_val, predictions, target_names = labels))
 
 import seaborn as sn
@@ -168,4 +161,7 @@ df_cm = pd.DataFrame(cm1, index = [i for i in labels],
               columns = [i for i in labels])
 plt.figure(figsize = (10,7))
 sn.heatmap(df_cm, annot=True,cmap="RdPu")
-plt.savefig('confusion_mrtx1.png',bbox_inches = 'tight')
+plt.savefig('confusion_mrtx2.png',bbox_inches = 'tight')
+
+model.save_weights(f'{EPOCHS}_epoch_transfer_lr.cpkt')
+pickle.dump(history_tr.history, open(f'history_{EPOCHS}_epoch_tr.pkl','wb'))
