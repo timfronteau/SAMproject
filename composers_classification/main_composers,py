@@ -1,0 +1,7 @@
+from gen_data import gen_data
+
+
+
+if __name__ =='__main__':
+    # Pour generer des donnees (spectorgram et wavelet)
+    # gen_data()
