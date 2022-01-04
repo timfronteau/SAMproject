@@ -171,6 +171,10 @@ predictions = np.argmax(predictions, axis=1)
 
 get_confusion_matrix(y_val, predictions, labels, path='confusion_mrtx_{SIM_TYPE}.png')
 
+
+
+
+
 epochs_range = range(EPOCHS)
 import matplotlib.pyplot as plt
 
