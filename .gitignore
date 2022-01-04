@@ -10,6 +10,7 @@ wavelets
 
 #desktop.ini
 *.desktop.ini
+*/.desktop.ini
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -81,3 +82,4 @@ venv.bak/
 maps_composers/
 misc/
 msdi/
+desktop.ini
