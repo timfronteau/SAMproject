@@ -9,9 +9,29 @@ EPOCHS = 10
 NB_ITERATIONS = 10
 
 GET_AND_SAVE_DATA = False
-DATASET_PATH = 'baseline_img.npz'
-MODEL_DIR = 'img_model_conv'  # 'deep_model'
-INPUT_SHAPE = (200, 200, 3) # 2048
+DATA_TYPE = 'Image'  # 'Audio' 'MFCC' 'Text'
+
+if DATA_TYPE=='Image':
+    DATASET_PATH = 'baseline_img.npz'
+    MODEL_CLASS = BaselineImage
+    MODEL_DIR = 'img_model'
+    INPUT_SHAPE = (200, 200, 3)
+elif DATA_TYPE=='Audio':
+    DATASET_PATH = 'baseline_deep.npz'
+    MODEL_CLASS = BaselineAudio
+    MODEL_DIR = 'deep_model'
+    INPUT_SHAPE = 2048
+elif DATA_TYPE=='MFCC':
+    DATASET_PATH = 'baseline_mfcc.npz'
+    MODEL_CLASS = BaselineAudio  # BaselineMFCC
+    MODEL_DIR = 'mfcc_model'
+    INPUT_SHAPE = 2048   # CHANGE
+else:    # 'Text'
+    DATASET_PATH = 'baseline_txt.npz'
+    MODEL_CLASS = BaselineImage   # BaselineText
+    MODEL_DIR = 'txt_model'
+    INPUT_SHAPE = 2048   # CHANGE
+
 
 if __name__ == '__main__':
     data = DataReader()
@@ -19,39 +39,41 @@ if __name__ == '__main__':
     if GET_AND_SAVE_DATA:
         print("Getting data ...")
 
-        # MFCC features
-        dataset_path_baseline = 'baseline_mfcc.npz'
+        if DATA_TYPE == 'MFCC':
+            # MFCC features
+            dataset_path_baseline = 'baseline_mfcc.npz'
 
-        X_train, y_train = data.get_train_data()
-        X_val, y_val = data.get_val_data()
-        X_test, y_test = data.get_test_data()
+            X_train, y_train = data.get_train_data()
+            X_val, y_val = data.get_val_data()
+            X_test, y_test = data.get_test_data()
 
-        #save the data to a .npz file
-        np.savez(dataset_path_baseline,X_train=X_train, X_val=X_val, X_test=X_test,
-                                         y_train=y_train, y_val=y_val, y_test=y_test)
+            #save the data to a .npz file
+            np.savez(dataset_path_baseline,X_train=X_train, X_val=X_val, X_test=X_test,
+                                             y_train=y_train, y_val=y_val, y_test=y_test)
 
+        if DATA_TYPE == 'Audio':
+            # Deep features
+            dataset_path_baseline = 'baseline_deep.npz'
 
-        # Deep features
-        dataset_path_baseline = 'baseline_deep.npz'
+            X_train, y_train = data.get_train_deep_features()
+            X_val, y_val = data.get_val_deep_features()
+            X_test, y_test = data.get_test_deep_features()
 
-        X_train, y_train = data.get_train_deep_features()
-        X_val, y_val = data.get_val_deep_features()
-        X_test, y_test = data.get_test_deep_features()
+            #save the data to a .npz file
+            np.savez(dataset_path_baseline,X_train=X_train, X_val=X_val, X_test=X_test,
+                                             y_train=y_train, y_val=y_val, y_test=y_test)
 
-        #save the data to a .npz file
-        np.savez(dataset_path_baseline,X_train=X_train, X_val=X_val, X_test=X_test,
-                                         y_train=y_train, y_val=y_val, y_test=y_test)
+        if DATA_TYPE == 'Image':
+            # Image features
+            dataset_path_baseline = 'baseline_img.npz'
 
-        # Image features
-        dataset_path_baseline = 'baseline_img.npz'
+            X_train, y_train = data.get_train_img_features()
+            X_val, y_val = data.get_val_img_features()
+            X_test, y_test = data.get_test_img_features()
 
-        X_train, y_train = data.get_train_img_features()
-        X_val, y_val = data.get_val_img_features()
-        X_test, y_test = data.get_test_img_features()
-
-        # save the data to a .npz file
-        np.savez(dataset_path_baseline, X_train=X_train, X_val=X_val, X_test=X_test,
-                 y_train=y_train, y_val=y_val, y_test=y_test)
+            # save the data to a .npz file
+            np.savez(dataset_path_baseline, X_train=X_train, X_val=X_val, X_test=X_test,
+                     y_train=y_train, y_val=y_val, y_test=y_test)
 
     # Loading data
     print(f"Loading data from {DATASET_PATH}...")
@@ -67,11 +89,7 @@ if __name__ == '__main__':
     print("Building model ...")
     
 
-    if MODEL_DIR == 'img_model_conv':
-        baseline = BaselineImage(X_train, X_val, X_test, y_train, y_val, y_test,
-                        data.nb_of_label, batch_size=BATCH_SIZE, epochs=EPOCHS, input_shape=INPUT_SHAPE)
-    else:
-        baseline = BaselineAudio(X_train, X_val, X_test, y_train, y_val, y_test,
+    baseline = MODEL_CLASS(X_train, X_val, X_test, y_train, y_val, y_test,
                         data.nb_of_label, batch_size=BATCH_SIZE, epochs=EPOCHS, input_shape=INPUT_SHAPE)
         
     baseline.build_model()

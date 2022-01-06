@@ -17,7 +17,7 @@ class Baseline():
         self.epochs = epochs
 
     @abc.abstractmethod
-    def build_conv_model(self):
+    def build_model(self):
         raise NotImplementedError
     
 

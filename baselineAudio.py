@@ -12,9 +12,6 @@ class BaselineAudio(Baseline):
     def build_model(self):
         m = Sequential()        
         m.add(Input(shape=self.input_shape))
-        if type(self.input_shape) == tuple:
-            m.add(MaxPooling2D((4, 4)))
-            m.add(Flatten())
         m.add(Dense(2048, activation='relu'))
         m.add(Dropout(0.05))
         m.add(Dense(1024, activation='relu'))

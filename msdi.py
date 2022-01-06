@@ -48,6 +48,15 @@ class Msdi():
         res = [plt.imread(Path(self.msdi_path) / img) for img in dataset['img']]
         return res
 
+    def load_txt(self, set = 'all'):
+        #TODO
+        """ set = {'all','train','test','val'} """
+        assert type(set) == str, "set argument = 'all', 'train', 'test' or 'val'"
+        print("Loading "+ set +" images ...")
+        dataset = self.df.loc[(self.df['set']==set)]
+        res = [plt.imread(Path(self.msdi_path) / img) for img in dataset['img']]
+        return res
+
     def get_label(self, set = 'all'):
         """ set = {'all','train','test','val'} """
         assert type(set) == str, "set argument = 'all', 'train', 'test' or 'val'"
