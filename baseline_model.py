@@ -1,6 +1,7 @@
 from keras.layers import Dense, Dropout, BatchNormalization, Conv2D, MaxPooling2D, AveragePooling2D, Flatten
 from keras.models import Sequential
 from keras import Input
+from tensorflow.keras.optimizers import Adam
 import numpy as np
 
 class Baseline():
@@ -32,9 +33,11 @@ class Baseline():
         m.add(Dropout(0.2))
         m.add(Dense(64, activation='relu'))
         m.add(Dropout(0.05))
-        m.add(Dense(self.nb_of_label, activation = 'softmax'))
+        m.add(Dense(self.nb_of_label, activation='softmax'))
 
-        m.compile(loss = 'categorical_crossentropy', metrics = ['accuracy'])
+        m.summary()
+        # opt = Adam(learning_rate=0.01)
+        m.compile(loss='categorical_crossentropy', metrics=['accuracy']) # , optimizer=opt
         
         self.model = m
 
@@ -62,6 +65,7 @@ class Baseline():
 
         m.compile(loss='categorical_crossentropy', metrics=['accuracy'])
 
+        m.summary()
         self.model = m
 
     def train(self):
