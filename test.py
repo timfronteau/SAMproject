@@ -15,14 +15,14 @@ NB_ITERATIONS = 10
 
 GET_AND_SAVE_DATA = False
 DATASET_PATH = 'baseline_img.npz'
-MODEL_DIR = 'img_model_conv2'  # 'deep_model'
+MODEL_DIR = 'img_model_conv'  # 'deep_model'
 INPUT_SHAPE = (200, 200, 3) # 2048
 
 if __name__ == '__main__':
-    print("Getting data ...")
     data = DataReader()
 
     if GET_AND_SAVE_DATA:
+        print("Getting data ...")
 
         # MFCC features
         dataset_path_baseline = 'baseline_mfcc.npz'
@@ -73,7 +73,7 @@ if __name__ == '__main__':
     baseline = Baseline(X_train, X_val, X_test, y_train, y_val, y_test,
                         data.nb_of_label, batch_size=BATCH_SIZE, epochs=EPOCHS, input_shape=INPUT_SHAPE)
 
-    if not re.findall('conv', MODEL_DIR):
+    if MODEL_DIR == 'img_model_conv':
         baseline.build_conv_model()
     else:
         baseline.build_model()

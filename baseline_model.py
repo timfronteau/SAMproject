@@ -35,6 +35,7 @@ class Baseline():
         m.add(Dropout(0.05))
         m.add(Dense(self.nb_of_label, activation='softmax'))
 
+        m.summary()
         # opt = Adam(learning_rate=0.01)
         m.compile(loss='categorical_crossentropy', metrics=['accuracy']) # , optimizer=opt
         
