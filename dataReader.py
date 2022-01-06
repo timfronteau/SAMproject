@@ -15,9 +15,6 @@ class DataReader():
         y = self.msdi.get_label(set)
         y = LabelEncoder().fit_transform(y)
         return to_categorical(y, num_classes=self.nb_of_label)
-        #return np.array([1*([y[i]]*self.nb_of_label == self.label_list) for i in range(len(y))],
-        #                dtype=int)
-
 
     def __get_feat(self, set):
         X = self.msdi.load_mfcc(set)
@@ -58,13 +55,10 @@ class DataReader():
 
     # Image Features
     def get_train_img_features(self):
-        #Done
         return self.__get_img_feat('train'), self.__get_target('train')
 
     def get_val_img_features(self):
-        #Done
         return self.__get_img_feat('val'), self.__get_target('val')
 
     def get_test_img_features(self):
-        #Done
         return self.__get_img_feat('test'), self.__get_target('test')
