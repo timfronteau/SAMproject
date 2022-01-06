@@ -16,3 +16,6 @@ misc/
 msdi/
 *.zip
 *.npz
+
+composers_classification/wavelets
+composers_classification/spectrogram
