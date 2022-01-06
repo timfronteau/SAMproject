@@ -19,3 +19,5 @@ msdi/
 
 composers_classification/wavelets
 composers_classification/spectrogram
+*.ini
+*.pickle
