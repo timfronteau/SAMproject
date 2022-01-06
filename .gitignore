@@ -17,6 +17,10 @@ msdi/
 *.zip
 *.npz
 
+msx_lyrics_genre.txt
+mxm_dataset_train.txt
+mxm_dataset_test.txt
+
 composers_classification/wavelets
 composers_classification/spectrogram
 *.ini
