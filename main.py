@@ -41,7 +41,7 @@ if __name__ == '__main__':
         #save the data to a .npz file
         np.savez(dataset_path_baseline,X_train=X_train, X_val=X_val, X_test=X_test,
                                          y_train=y_train, y_val=y_val, y_test=y_test)
-
+        
         # Image features
         dataset_path_baseline = 'baseline_img.npz'
 
@@ -74,7 +74,7 @@ if __name__ == '__main__':
         baseline = BaselineAudio(X_train, X_val, X_test, y_train, y_val, y_test,
                         data.nb_of_label, batch_size=BATCH_SIZE, epochs=EPOCHS, input_shape=INPUT_SHAPE)
         
-    baseline.build_model()
+    baseline.build_model_transfert()
     
     print("Training model ...")
     for k in range(NB_ITERATIONS):
