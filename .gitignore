@@ -1,3 +1,17 @@
+# All data foldes
+deep_model
+maps_composers
+msdi
+msdi_img
+spectrogram
+wavelets
+*.pkl
+*.cpkt*
+
+#desktop.ini
+*.desktop.ini
+*/.desktop.ini
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -68,3 +82,4 @@ venv.bak/
 maps_composers/
 misc/
 msdi/
+desktop.ini
