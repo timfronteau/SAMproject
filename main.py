@@ -51,7 +51,7 @@ if __name__ == '__main__':
             np.savez(dataset_path_baseline,X_train=X_train, X_val=X_val, X_test=X_test,
                                              y_train=y_train, y_val=y_val, y_test=y_test)
 
-        if DATA_TYPE == 'Audio':
+        elif DATA_TYPE == 'Audio':
             # Deep features
             dataset_path_baseline = 'baseline_deep.npz'
 
@@ -63,13 +63,25 @@ if __name__ == '__main__':
             np.savez(dataset_path_baseline,X_train=X_train, X_val=X_val, X_test=X_test,
                                              y_train=y_train, y_val=y_val, y_test=y_test)
 
-        if DATA_TYPE == 'Image':
+        elif DATA_TYPE == 'Image':
             # Image features
             dataset_path_baseline = 'baseline_img.npz'
 
             X_train, y_train = data.get_train_img_features()
             X_val, y_val = data.get_val_img_features()
             X_test, y_test = data.get_test_img_features()
+
+            # save the data to a .npz file
+            np.savez(dataset_path_baseline, X_train=X_train, X_val=X_val, X_test=X_test,
+                     y_train=y_train, y_val=y_val, y_test=y_test)
+
+        else:
+            # Text features
+            dataset_path_baseline = 'baseline_txt.npz'
+
+            X_train, y_train = data.get_train_txt_features()
+            X_val, y_val = data.get_val_txt_features()
+            X_test, y_test = data.get_test_txt_features()
 
             # save the data to a .npz file
             np.savez(dataset_path_baseline, X_train=X_train, X_val=X_val, X_test=X_test,
