@@ -4,10 +4,13 @@ from dataReader import DataReader
 from baselineImage import BaselineImage
 from baselineAudio import BaselineAudio
 from baselineMFCC import BaselineMFCC
+import pandas as pd
+import csv
+import time
 
 BATCH_SIZE = 32
-EPOCHS = 20
-NB_ITERATIONS = 1
+EPOCHS = 10
+NB_ITERATIONS = 2
 NB_SAMPLE = None #integer or None value for all the dataset
 
 GET_AND_SAVE_DATA = False
@@ -105,24 +108,23 @@ if __name__ == '__main__':
     
 
     print("Building model ...")
-    
 
     baseline = MODEL_CLASS(X_train, X_val, X_test, y_train, y_val, y_test,
                         data.nb_of_label, batch_size=BATCH_SIZE, epochs=EPOCHS, input_shape=INPUT_SHAPE)
         
     baseline.build_model()
     
-    print("\nRandom baseline result ...")
-    baseline.evaluate()
+    baseline.baseline_result()
 
     print("\nTraining model ...")
+    baseline.save_config_to_csv(MODEL_DIR, BATCH_SIZE, EPOCHS,NB_ITERATIONS, DATA_TYPE, DATASET_PATH, MODEL_CLASS, INPUT_SHAPE)
+
     for k in range(NB_ITERATIONS):
         print(f"Iteration {k}/{NB_ITERATIONS}")
-        try:
-            baseline.load_model(MODEL_DIR)
-        except: pass
-        baseline.train()
-        print('Model evaluation:')
+        try:baseline.load_model(MODEL_DIR)
+        except: print(f'Auncun model trouvé, un nouveau model sera sauvegarder sous le nom de : {MODEL_DIR}')
+        history = baseline.fit()
+        baseline.save_history_to_csv(MODEL_DIR, ITERATION=k)
         baseline.evaluate()
         baseline.save(MODEL_DIR)
 
