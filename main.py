@@ -8,6 +8,7 @@ from baselineMFCC import BaselineMFCC
 BATCH_SIZE = 32
 EPOCHS = 20
 NB_ITERATIONS = 1
+NB_SAMPLE = None #integer or None value for all the dataset
 
 GET_AND_SAVE_DATA = False
 DATA_TYPE = 'MFCC'  # 'Audio' 'MFCC' 'Text' 'Image'
@@ -45,10 +46,9 @@ if __name__ == '__main__':
             # MFCC features
             dataset_path_baseline = 'baseline_mfcc.npz'
 
-            N = None
-            X_train, y_train = data.get_train_mfcc_data(N=N)
-            X_val, y_val = data.get_val_mfcc_data(N=N)
-            X_test, y_test = data.get_test_mfcc_data(N=N)
+            X_train, y_train = data.get_train_mfcc_data(N=NB_SAMPLE)
+            X_val, y_val = data.get_val_mfcc_data(N=NB_SAMPLE)
+            X_test, y_test = data.get_test_mfcc_data(N=NB_SAMPLE)
             
 
             #save the data to a .npz file
