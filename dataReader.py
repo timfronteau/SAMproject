@@ -32,12 +32,6 @@ class DataReader():
         print(np.shape(X))
         return X
 
-    # def __get_txt_feat(self,set):
-    #     #TODO
-    #     X = self.msdi.load_img(set)
-    #     print(np.shape(X))
-    #     return X
-
     def __get_txt_feat_and_target(self):
         X, y = self.msdi.load_txt_and_target()
         print(np.shape(X), np.shape(y))
