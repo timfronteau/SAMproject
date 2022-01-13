@@ -6,10 +6,10 @@ from baselineAudio import BaselineAudio
 from baselineMFCC import BaselineMFCC
 
 BATCH_SIZE = 32
-EPOCHS = 2
+EPOCHS = 20
 NB_ITERATIONS = 1
 
-GET_AND_SAVE_DATA = True
+GET_AND_SAVE_DATA = False
 DATA_TYPE = 'MFCC'  # 'Audio' 'MFCC' 'Text' 'Image'
 
 if DATA_TYPE=='Image':
@@ -26,12 +26,13 @@ elif DATA_TYPE=='MFCC':
     DATASET_PATH = 'baseline_mfcc.npz'
     MODEL_CLASS = BaselineMFCC
     MODEL_DIR = 'mfcc_model'
-    INPUT_SHAPE = 12*3   # CHANGE
-else:    # 'Text'
+    INPUT_SHAPE = 12*3
+elif DATA_TYPE=='text':
     DATASET_PATH = 'baseline_txt.npz'
     MODEL_CLASS = BaselineImage   # BaselineText
     MODEL_DIR = 'txt_model'
     INPUT_SHAPE = 2048   # CHANGE
+else : print(f"Unvalid argument for DATA_TYPE")
 
 
 if __name__ == '__main__':
@@ -44,7 +45,7 @@ if __name__ == '__main__':
             # MFCC features
             dataset_path_baseline = 'baseline_mfcc.npz'
 
-            N = 200
+            N = None
             X_train, y_train = data.get_train_mfcc_data(N=N)
             X_val, y_val = data.get_val_mfcc_data(N=N)
             X_test, y_test = data.get_test_mfcc_data(N=N)
@@ -78,7 +79,7 @@ if __name__ == '__main__':
             np.savez(dataset_path_baseline, X_train=X_train, X_val=X_val, X_test=X_test,
                      y_train=y_train, y_val=y_val, y_test=y_test)
 
-        else:
+        elif DATA_TYPE=='text':
             # Text features
             dataset_path_baseline = 'baseline_txt.npz'
 
@@ -89,6 +90,8 @@ if __name__ == '__main__':
             # save the data to a .npz file
             np.savez(dataset_path_baseline, X_train=X_train, X_val=X_val, X_test=X_test,
                      y_train=y_train, y_val=y_val, y_test=y_test)
+        else :
+            print(f"Unvalid argument for DATA_TYPE")
 
     # Loading data
     print(f"Loading data from {DATASET_PATH}...")
