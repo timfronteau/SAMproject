@@ -8,12 +8,33 @@ class Msdi():
     def __init__(self, msdi_path = 'msdi'):
         self.msdi_path = msdi_path
         self.df = self.get_msdi_dataframe()
+        self.text_df = self.get_text_dataframe()
         self.nb_of_entry = self.get_nb_of_entry()
         self.label_list = self.get_label_list()
         self.nb_of_label = len(self.label_list)
         
     def get_msdi_dataframe(self):
         return pd.read_csv(Path(self.msdi_path) / 'msdi_mapping.csv')
+
+    def get_text_dataframe(self):
+        file = open("msx_lyrics_genre.txt", "r")
+        lines = file.readlines()
+        ids = []
+        labels = []
+        text_bow = []
+        for i, line in enumerate(lines):
+            line_list = line.split()
+            ids.append(line_list[0])
+            labels.append(line_list[1])
+            bow = np.zeros(5000)
+            for word in line_list[2:]:
+                wd, nb = word.split(':')
+                bow[int(wd) - 1] = int(nb)
+            text_bow.append(bow)
+        data = pd.DataFrame(data={'id': ids,
+                                  'label': labels,
+                                  'bow': text_bow})
+        return data
 
     def get_nb_of_entry(self):
         return len(self.get_msdi_dataframe())
@@ -44,7 +65,6 @@ class Msdi():
         return res
 
     def load_img(self, set = 'all'):
-        #Done
         """ set = {'all','train','test','val'} """
         assert type(set) == str, "set argument = 'all', 'train', 'test' or 'val'"
         print("Loading "+ set +" images ...")
@@ -52,14 +72,9 @@ class Msdi():
         res = [plt.imread(Path(self.msdi_path) / img) for img in dataset['img']]
         return res
 
-    def load_txt(self, set = 'all'):
-        #TODO
-        """ set = {'all','train','test','val'} """
-        assert type(set) == str, "set argument = 'all', 'train', 'test' or 'val'"
-        print("Loading "+ set +" images ...")
-        dataset = self.df.loc[(self.df['set']==set)]
-        res = [plt.imread(Path(self.msdi_path) / img) for img in dataset['img']]
-        return res
+    def load_txt_and_target(self):
+        print("Loading text BOWs and labels ...")
+        return np.array(self.text_df['bow'].values.tolist()), self.text_df['label'].values
 
     def get_label(self, set = 'all'):
         """ set = {'all','train','test','val'} """

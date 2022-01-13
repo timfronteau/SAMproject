@@ -3,6 +3,7 @@ import numpy as np
 from dataReader import DataReader
 from baselineImage import BaselineImage
 from baselineAudio import BaselineAudio
+
 from baselineMFCC import BaselineMFCC
 import pandas as pd
 import csv
@@ -15,6 +16,7 @@ NB_SAMPLE = None #integer or None value for all the dataset
 
 GET_AND_SAVE_DATA = False
 DATA_TYPE = 'MFCC'  # 'Audio' 'MFCC' 'Text' 'Image'
+
 
 if DATA_TYPE=='Image':
     DATASET_PATH = 'baseline_img.npz'
@@ -33,11 +35,10 @@ elif DATA_TYPE=='MFCC':
     INPUT_SHAPE = 12*3
 elif DATA_TYPE=='text':
     DATASET_PATH = 'baseline_txt.npz'
-    MODEL_CLASS = BaselineImage   # BaselineText
+    MODEL_CLASS = BaselineText
     MODEL_DIR = 'txt_model'
-    INPUT_SHAPE = 2048   # CHANGE
+    INPUT_SHAPE = 5000
 else : print(f"Unvalid argument for DATA_TYPE")
-
 
 if __name__ == '__main__':
     data = DataReader()
@@ -86,9 +87,13 @@ if __name__ == '__main__':
             # Text features
             dataset_path_baseline = 'baseline_txt.npz'
 
-            X_train, y_train = data.get_train_txt_features()
-            X_val, y_val = data.get_val_txt_features()
-            X_test, y_test = data.get_test_txt_features()
+            X, y = data.get_txt_features()
+
+            val_size = int(X.shape[0]/10)
+
+            X_train, y_train = X[:8*val_size], y[:8*val_size]
+            X_val, y_val = X[8*val_size:9*val_size], y[8*val_size:9*val_size]
+            X_test, y_test = X[9*val_size:], y[9*val_size:]
 
             # save the data to a .npz file
             np.savez(dataset_path_baseline, X_train=X_train, X_val=X_val, X_test=X_test,
