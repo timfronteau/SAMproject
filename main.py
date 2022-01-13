@@ -3,13 +3,14 @@ import numpy as np
 from dataReader import DataReader
 from baselineImage import BaselineImage
 from baselineAudio import BaselineAudio
+from baselineMFCC import BaselineMFCC
 
 BATCH_SIZE = 32
-EPOCHS = 10
-NB_ITERATIONS = 10
+EPOCHS = 2
+NB_ITERATIONS = 1
 
-GET_AND_SAVE_DATA = False
-DATA_TYPE = 'Image'  # 'Audio' 'MFCC' 'Text'
+GET_AND_SAVE_DATA = True
+DATA_TYPE = 'MFCC'  # 'Audio' 'MFCC' 'Text' 'Image'
 
 if DATA_TYPE=='Image':
     DATASET_PATH = 'baseline_img.npz'
@@ -23,9 +24,9 @@ elif DATA_TYPE=='Audio':
     INPUT_SHAPE = 2048
 elif DATA_TYPE=='MFCC':
     DATASET_PATH = 'baseline_mfcc.npz'
-    MODEL_CLASS = BaselineAudio  # BaselineMFCC
+    MODEL_CLASS = BaselineMFCC
     MODEL_DIR = 'mfcc_model'
-    INPUT_SHAPE = 2048   # CHANGE
+    INPUT_SHAPE = 12*3   # CHANGE
 else:    # 'Text'
     DATASET_PATH = 'baseline_txt.npz'
     MODEL_CLASS = BaselineImage   # BaselineText
@@ -43,9 +44,11 @@ if __name__ == '__main__':
             # MFCC features
             dataset_path_baseline = 'baseline_mfcc.npz'
 
-            X_train, y_train = data.get_train_data()
-            X_val, y_val = data.get_val_data()
-            X_test, y_test = data.get_test_data()
+            N = 200
+            X_train, y_train = data.get_train_mfcc_data(N=N)
+            X_val, y_val = data.get_val_mfcc_data(N=N)
+            X_test, y_test = data.get_test_mfcc_data(N=N)
+            
 
             #save the data to a .npz file
             np.savez(dataset_path_baseline,X_train=X_train, X_val=X_val, X_test=X_test,
@@ -104,7 +107,9 @@ if __name__ == '__main__':
     baseline = MODEL_CLASS(X_train, X_val, X_test, y_train, y_val, y_test,
                         data.nb_of_label, batch_size=BATCH_SIZE, epochs=EPOCHS, input_shape=INPUT_SHAPE)
         
-    baseline.build_model_transfert()
+    #baseline.build_model_transfert()
+
+    baseline.build_model()
     
     print("Training model ...")
     for k in range(NB_ITERATIONS):
