@@ -10,8 +10,11 @@ class BaselineImage(Baseline):
     def __init__(self, X_train, X_val, X_test, y_train, y_val, y_test, nb_of_label, batch_size=16, epochs=10, input_shape=(200, 200, 3)):
         super().__init__(X_train, X_val, X_test, y_train, y_val, y_test, nb_of_label, batch_size=batch_size, epochs=epochs, input_shape=input_shape)
 
-
-    def build_model(self):
+    def build_model(self,type='simple'):
+        if type=='simple': self.__build_model_simple()
+        elif type=='transfert': self.__build_model_transfert()
+        
+    def __build_model_simple(self):
         m = Sequential()
         m.add(Input(shape=self.input_shape))
         m.add(MaxPooling2D((4, 4)))
@@ -37,7 +40,7 @@ class BaselineImage(Baseline):
         m.summary()
         self.model = m
 
-    def build_model_transfert(self):
+    def __build_model_transfert(self):
         vgg19 = VGG19(weights='imagenet', include_top=False, input_shape=self.input_shape)
         vgg19 = Model(inputs=vgg19.input, outputs=vgg19.get_layer('block5_pool').output)
         vgg19.trainable = False
