@@ -27,3 +27,4 @@ composers_classification/spectrogram
 *.pickle
 
 __pycache__
+test.py
