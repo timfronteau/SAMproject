@@ -17,6 +17,7 @@ class BaselineFusion(Baseline):
         
         self.DATA_TYPE_LIST = ['Image', 'Audio', 'MFCC']        
         self.nb_clf = len(self.DATA_TYPE_LIST) # number of classifiers`
+        self.model_name = 'fusion_model'
 
     def build_model(self):
         clfs = []
@@ -75,10 +76,10 @@ class BaselineFusion(Baseline):
         output = Dense(self.nb_of_label, activation='softmax', name='fusion_output')(dropout3)
 
         inputs = [m.layers[0].input for m in clfs]
-        m = Model(inputs=inputs, outputs=output, name='fusion_model')
+        m = Model(inputs=inputs, outputs=output, name=self.model_name)
         print(m.summary())
         m.compile(optimizer='adam',loss='categorical_crossentropy', metrics=['accuracy']) # , optimizer=opt
-        plot_model(model=m, to_file='fusion_model.png', show_shapes=True)
+        plot_model(model=m, to_file=f'{self.model_name}_tree.png', show_shapes=True)
         self.model = m
 
 
