@@ -13,8 +13,8 @@ EPOCHS = 5
 NB_ITERATIONS = 2
 NB_SAMPLE = None #integer or None value for all the dataset
 
-GET_AND_SAVE_DATA = False
-DATA_TYPE = 'Fusion'  # 'Image' 'Audio' 'MFCC' 'Text' 'Fusion'
+GET_AND_SAVE_DATA = True
+DATA_TYPE = 'Text'  # 'Image' 'Audio' 'MFCC' 'Text' 'Fusion'
 
 
 if DATA_TYPE=='Image':
@@ -33,7 +33,7 @@ elif DATA_TYPE=='MFCC':
     MODEL_DIR = 'mfcc_model'
     INPUT_SHAPE = 12*3
 elif DATA_TYPE=='Text':
-    DATASET_PATH = 'baseline_txt.npz'
+    DATASET_PATH = ['baseline_txt.npz']
     MODEL_CLASS = BaselineText
     MODEL_DIR = 'txt_model'
     INPUT_SHAPE = 5000
@@ -47,7 +47,6 @@ else : print(f"Unvalid argument for DATA_TYPE")
 
 if __name__ == '__main__':
     data = DataReader()
-
     if GET_AND_SAVE_DATA:
         print("Getting data ...")
 
@@ -87,25 +86,13 @@ if __name__ == '__main__':
             np.savez(dataset_path_baseline, X_train=X_train, X_val=X_val, X_test=X_test,
                      y_train=y_train, y_val=y_val, y_test=y_test)
 
-        elif DATA_TYPE=='text':
+        elif DATA_TYPE=='Text':
             # Text features
             dataset_path_baseline = 'baseline_txt.npz'
 
-            X_train0, y_train0 = data.get_train_txt_features()
-            X_val0, y_val0 = data.get_val_txt_features()
-            X_test0, y_test0 = data.get_test_txt_features()
-
-            notnan_train = [type(i)==np.ndarray for i in X_train0]
-            notnan_val = [type(i) == np.ndarray for i in X_val0]
-            notnan_test = [type(i) == np.ndarray for i in X_test0]
-
-            X_train1, y_train1 = np.array(X_train0, dtype=object)[notnan_train], np.array(y_train0, dtype=object)[notnan_train]
-            X_val1, y_val1 = np.array(X_val0, dtype=object)[notnan_val], np.array(y_val0, dtype=object)[notnan_val]
-            X_test1, y_test1 = np.array(X_test0, dtype=object)[notnan_test], np.array(y_test0, dtype=object)[notnan_test]
-
-            X_train, y_train = np.array(X_train1.tolist()), np.array(y_train1.tolist())
-            X_val, y_val = np.array(X_val1.tolist()), np.array(y_val1.tolist())
-            X_test, y_test = np.array(X_test1.tolist()), np.array(y_test1.tolist())
+            X_train, y_train = data.get_train_txt_features()
+            X_val, y_val = data.get_val_txt_features()
+            X_test, y_test = data.get_test_txt_features()
 
             # save the data to a .npz file
             np.savez(dataset_path_baseline, X_train=X_train, X_val=X_val, X_test=X_test,
@@ -122,14 +109,14 @@ if __name__ == '__main__':
     y_test = []
     for path in DATASET_PATH :
         print(f"Loading data from {path}...")
-        dataset_baseline = np.load(path)
+        dataset_baseline = np.load(path, allow_pickle=True)
         X_train.append(dataset_baseline['X_train'])
         X_val.append(dataset_baseline['X_val'])
         X_test.append(dataset_baseline['X_test'])
         y_train.append(dataset_baseline['y_train'])
         y_val.append(dataset_baseline['y_val'])
         y_test = dataset_baseline['y_test']
-    
+    print(X_train)
 
     print("Building model ...")
 

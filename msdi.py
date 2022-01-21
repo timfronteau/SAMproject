@@ -16,7 +16,7 @@ class Msdi():
     def get_msdi_dataframe(self):
         df_msdi = pd.read_csv(Path(self.msdi_path) / 'msdi_mapping.csv')
 
-        file = open("msx_lyrics_genre.txt", "r")
+        file = open(f"mxm/msx_lyrics_genre.txt", "r")
         lines = file.readlines()
         ids = []
         text_bow = []

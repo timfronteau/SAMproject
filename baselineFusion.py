@@ -37,7 +37,7 @@ class BaselineFusion(Baseline):
                 MODEL_CLASS = BaselineMFCC
                 MODEL_DIR = 'mfcc_model'
                 INPUT_SHAPE = 12*3
-            elif DATA_TYPE=='text':
+            elif DATA_TYPE=='Text':
                 DATASET_PATH = 'baseline_txt.npz'
                 MODEL_CLASS = BaselineText
                 MODEL_DIR = 'txt_model'
