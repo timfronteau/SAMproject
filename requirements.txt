@@ -4,3 +4,6 @@ tensorflow
 keras
 pathlib
 scikit-learn
+graphviz
+pydot
+pydotplus
