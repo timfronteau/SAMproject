@@ -8,6 +8,7 @@ class Msdi():
     def __init__(self, msdi_path = 'msdi'):
         self.msdi_path = msdi_path
         self.df = self.get_msdi_dataframe()
+        #self.text_df = self.get_text_dataframe()
         self.nb_of_entry = self.get_nb_of_entry()
         self.label_list = self.get_label_list()
         self.nb_of_label = len(self.label_list)
