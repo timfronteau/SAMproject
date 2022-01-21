@@ -5,44 +5,48 @@ from baselineImage import BaselineImage
 from baselineAudio import BaselineAudio
 from baselineText import BaselineText
 from baselineMFCC import BaselineMFCC
-import pandas as pd
-import csv
-import time
+from baselineFusion import BaselineFusion
+
 
 BATCH_SIZE = 32
-EPOCHS = 10
+EPOCHS = 5
 NB_ITERATIONS = 2
 NB_SAMPLE = None #integer or None value for all the dataset
 
-GET_AND_SAVE_DATA = False
-DATA_TYPE = 'MFCC'  # 'Audio' 'MFCC' 'Text' 'Image'
+GET_AND_SAVE_DATA = True
+DATA_TYPE = 'Text'  # 'Image' 'Audio' 'MFCC' 'Text' 'Fusion'
 
 
 if DATA_TYPE=='Image':
-    DATASET_PATH = 'baseline_img.npz'
+    DATASET_PATH = ['baseline_img.npz']
     MODEL_CLASS = BaselineImage
     MODEL_DIR = 'img_model'
     INPUT_SHAPE = (200, 200, 3)
 elif DATA_TYPE=='Audio':
-    DATASET_PATH = 'baseline_deep.npz'
+    DATASET_PATH = ['baseline_deep.npz']
     MODEL_CLASS = BaselineAudio
     MODEL_DIR = 'deep_model'
     INPUT_SHAPE = 2048
 elif DATA_TYPE=='MFCC':
-    DATASET_PATH = 'baseline_mfcc.npz'
+    DATASET_PATH = ['baseline_mfcc.npz']
     MODEL_CLASS = BaselineMFCC
     MODEL_DIR = 'mfcc_model'
     INPUT_SHAPE = 12*3
-elif DATA_TYPE=='text':
-    DATASET_PATH = 'baseline_txt.npz'
+elif DATA_TYPE=='Text':
+    DATASET_PATH = ['baseline_txt.npz']
     MODEL_CLASS = BaselineText
     MODEL_DIR = 'txt_model'
     INPUT_SHAPE = 5000
+elif DATA_TYPE=='Fusion':
+    DATASET_PATH = ['baseline_img.npz','baseline_deep.npz','baseline_mfcc.npz']
+    MODEL_CLASS = BaselineFusion
+    MODEL_DIR = 'fusion_model'
+    INPUT_SHAPE = [(200, 200, 3), 2048, 12*3]
+    
 else : print(f"Unvalid argument for DATA_TYPE")
 
 if __name__ == '__main__':
     data = DataReader()
-
     if GET_AND_SAVE_DATA:
         print("Getting data ...")
 
@@ -54,7 +58,6 @@ if __name__ == '__main__':
             X_val, y_val = data.get_val_mfcc_data(N=NB_SAMPLE)
             X_test, y_test = data.get_test_mfcc_data(N=NB_SAMPLE)
             
-
             #save the data to a .npz file
             np.savez(dataset_path_baseline,X_train=X_train, X_val=X_val, X_test=X_test,
                                              y_train=y_train, y_val=y_val, y_test=y_test)
@@ -83,25 +86,13 @@ if __name__ == '__main__':
             np.savez(dataset_path_baseline, X_train=X_train, X_val=X_val, X_test=X_test,
                      y_train=y_train, y_val=y_val, y_test=y_test)
 
-        elif DATA_TYPE=='text':
+        elif DATA_TYPE=='Text':
             # Text features
             dataset_path_baseline = 'baseline_txt.npz'
 
-            X_train0, y_train0 = data.get_train_txt_features()
-            X_val0, y_val0 = data.get_val_txt_features()
-            X_test0, y_test0 = data.get_test_txt_features()
-
-            notnan_train = [type(i)==np.ndarray for i in X_train0]
-            notnan_val = [type(i) == np.ndarray for i in X_val0]
-            notnan_test = [type(i) == np.ndarray for i in X_test0]
-
-            X_train1, y_train1 = np.array(X_train0, dtype=object)[notnan_train], np.array(y_train0, dtype=object)[notnan_train]
-            X_val1, y_val1 = np.array(X_val0, dtype=object)[notnan_val], np.array(y_val0, dtype=object)[notnan_val]
-            X_test1, y_test1 = np.array(X_test0, dtype=object)[notnan_test], np.array(y_test0, dtype=object)[notnan_test]
-
-            X_train, y_train = np.array(X_train1.tolist()), np.array(y_train1.tolist())
-            X_val, y_val = np.array(X_val1.tolist()), np.array(y_val1.tolist())
-            X_test, y_test = np.array(X_test1.tolist()), np.array(y_test1.tolist())
+            X_train, y_train = data.get_train_txt_features()
+            X_val, y_val = data.get_val_txt_features()
+            X_test, y_test = data.get_test_txt_features()
 
             # save the data to a .npz file
             np.savez(dataset_path_baseline, X_train=X_train, X_val=X_val, X_test=X_test,
@@ -109,16 +100,23 @@ if __name__ == '__main__':
         else :
             print(f"Unvalid argument for DATA_TYPE")
 
-    # Loading data
-    print(f"Loading data from {DATASET_PATH}...")
-    dataset_baseline = np.load(DATASET_PATH)
-    X_train = dataset_baseline['X_train']
-    X_val = dataset_baseline['X_val']
-    X_test = dataset_baseline['X_test']
-    y_train = dataset_baseline['y_train']
-    y_val = dataset_baseline['y_val']
-    y_test = dataset_baseline['y_test']
-    
+    # Loading data    
+    X_train = []
+    X_val = []
+    X_test = []
+    y_train = []
+    y_val = []
+    y_test = []
+    for path in DATASET_PATH :
+        print(f"Loading data from {path}...")
+        dataset_baseline = np.load(path, allow_pickle=True)
+        X_train.append(dataset_baseline['X_train'])
+        X_val.append(dataset_baseline['X_val'])
+        X_test.append(dataset_baseline['X_test'])
+        y_train.append(dataset_baseline['y_train'])
+        y_val.append(dataset_baseline['y_val'])
+        y_test = dataset_baseline['y_test']
+    print(X_train)
 
     print("Building model ...")
 
@@ -135,7 +133,7 @@ if __name__ == '__main__':
     for k in range(NB_ITERATIONS):
         print(f"Iteration {k}/{NB_ITERATIONS}")
         try:baseline.load_model(MODEL_DIR)
-        except: print(f'Auncun model trouvé, un nouveau model sera sauvegarder sous le nom de : {MODEL_DIR}')
+        except: print(f'Aucun model trouvé, un nouveau model sera sauvegardé sous le nom de : {MODEL_DIR}')
         history = baseline.fit()
         baseline.save_history_to_csv(MODEL_DIR, ITERATION=k)
         baseline.evaluate()
