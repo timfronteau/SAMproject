@@ -11,25 +11,21 @@ class DataReader():
         self.nb_of_label = self.msdi.nb_of_label
         self.label_list = np.array(self.msdi.label_list)
 
-    def __get_target(self,set):        
-        y = self.msdi.get_label(set)
+    def __get_target(self,set, N=None):        
+        y = self.msdi.get_label(set)[:N]
         y = LabelEncoder().fit_transform(y)
         return to_categorical(y, num_classes=self.nb_of_label)
 
-    def __get_feat(self, set):
-        X = self.msdi.load_mfcc(set)
-        X = np.array([np.mean(x, axis=0) for x in X], dtype=float)
-        X = X.reshape([len(X),12])   
+    def __get_mfcc_feat(self, set,N=None):
+        X = self.msdi.load_mfcc(set,N)
         return X
 
     def __get_deep_feat(self,set):
         X = self.msdi.load_deep_audio_features(set)
-        print(np.shape(X))
         return X
 
     def __get_img_feat(self,set):
         X = self.msdi.load_img(set)
-        print(np.shape(X))
         return X
 
     def __get_txt_feat(self,set):
@@ -38,14 +34,14 @@ class DataReader():
         return X
 
     # MFCC features
-    def get_train_data(self):
-        return self.__get_feat('train'), self.__get_target('train')  
+    def get_train_mfcc_data(self,N=None):
+        return self.__get_mfcc_feat('train',N), self.__get_target('train',N)  
         
-    def get_val_data(self):
-        return self.__get_feat('val'), self.__get_target('val')  
+    def get_val_mfcc_data(self,N=None):
+        return self.__get_mfcc_feat('val',N), self.__get_target('val',N)  
     
-    def get_test_data(self):
-        return self.__get_feat('test'), self.__get_target('test')  
+    def get_test_mfcc_data(self,N=None):
+        return self.__get_mfcc_feat('test',N), self.__get_target('test',N)  
     
     # Deep Features
     def get_train_deep_features(self):

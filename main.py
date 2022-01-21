@@ -4,13 +4,19 @@ from dataReader import DataReader
 from baselineImage import BaselineImage
 from baselineAudio import BaselineAudio
 from baselineText import BaselineText
+from baselineMFCC import BaselineMFCC
+import pandas as pd
+import csv
+import time
 
 BATCH_SIZE = 32
 EPOCHS = 10
-NB_ITERATIONS = 10
+NB_ITERATIONS = 2
+NB_SAMPLE = None #integer or None value for all the dataset
 
 GET_AND_SAVE_DATA = False
-DATA_TYPE = 'Text'  # 'Audio' 'MFCC' 'Text'
+DATA_TYPE = 'MFCC'  # 'Audio' 'MFCC' 'Text' 'Image'
+
 
 if DATA_TYPE=='Image':
     DATASET_PATH = 'baseline_img.npz'
@@ -24,15 +30,15 @@ elif DATA_TYPE=='Audio':
     INPUT_SHAPE = 2048
 elif DATA_TYPE=='MFCC':
     DATASET_PATH = 'baseline_mfcc.npz'
-    MODEL_CLASS = BaselineAudio  # TODO BaselineMFCC
+    MODEL_CLASS = BaselineMFCC
     MODEL_DIR = 'mfcc_model'
-    INPUT_SHAPE = 2048   # TODO CHANGE
-else:    # 'Text'
+    INPUT_SHAPE = 12*3
+elif DATA_TYPE=='text':
     DATASET_PATH = 'baseline_txt.npz'
     MODEL_CLASS = BaselineText
     MODEL_DIR = 'txt_model'
     INPUT_SHAPE = 5000
-
+else : print(f"Unvalid argument for DATA_TYPE")
 
 if __name__ == '__main__':
     data = DataReader()
@@ -44,9 +50,10 @@ if __name__ == '__main__':
             # MFCC features
             dataset_path_baseline = 'baseline_mfcc.npz'
 
-            X_train, y_train = data.get_train_data()
-            X_val, y_val = data.get_val_data()
-            X_test, y_test = data.get_test_data()
+            X_train, y_train = data.get_train_mfcc_data(N=NB_SAMPLE)
+            X_val, y_val = data.get_val_mfcc_data(N=NB_SAMPLE)
+            X_test, y_test = data.get_test_mfcc_data(N=NB_SAMPLE)
+            
 
             #save the data to a .npz file
             np.savez(dataset_path_baseline,X_train=X_train, X_val=X_val, X_test=X_test,
@@ -76,7 +83,7 @@ if __name__ == '__main__':
             np.savez(dataset_path_baseline, X_train=X_train, X_val=X_val, X_test=X_test,
                      y_train=y_train, y_val=y_val, y_test=y_test)
 
-        else:
+        elif DATA_TYPE=='text':
             # Text features
             dataset_path_baseline = 'baseline_txt.npz'
 
@@ -99,6 +106,8 @@ if __name__ == '__main__':
             # save the data to a .npz file
             np.savez(dataset_path_baseline, X_train=X_train, X_val=X_val, X_test=X_test,
                      y_train=y_train, y_val=y_val, y_test=y_test)
+        else :
+            print(f"Unvalid argument for DATA_TYPE")
 
     # Loading data
     print(f"Loading data from {DATASET_PATH}...")
@@ -118,13 +127,17 @@ if __name__ == '__main__':
         
     baseline.build_model()
     
-    print("Training model ...")
+    baseline.baseline_result()
+
+    print("\nTraining model ...")
+    baseline.save_config_to_csv(MODEL_DIR, BATCH_SIZE, EPOCHS,NB_ITERATIONS, DATA_TYPE, DATASET_PATH, MODEL_CLASS, INPUT_SHAPE)
+
     for k in range(NB_ITERATIONS):
         print(f"Iteration {k}/{NB_ITERATIONS}")
-        try:
-            baseline.load_model(MODEL_DIR)
-        except: pass
-        baseline.train()
+        try:baseline.load_model(MODEL_DIR)
+        except: print(f'Auncun model trouvé, un nouveau model sera sauvegarder sous le nom de : {MODEL_DIR}')
+        history = baseline.fit()
+        baseline.save_history_to_csv(MODEL_DIR, ITERATION=k)
         baseline.evaluate()
         baseline.save(MODEL_DIR)
 
