@@ -9,7 +9,7 @@ class DataReader():
         self.msdi_path = msdi_path
         self.msdi = Msdi()
         self.nb_of_label = self.msdi.nb_of_label
-        self.label_list = np.array(self.msdi.get_label_list)
+        self.label_list = np.array(self.msdi.label_list)
 
     def __get_target(self,set, N=None):        
         y = self.msdi.get_label(set)[:N]
@@ -28,11 +28,10 @@ class DataReader():
         X = self.msdi.load_img(set)
         return X
 
-    def __get_txt_feat_and_target(self):
-        X, y = self.msdi.load_txt_and_target()
-        print(np.shape(X), np.shape(y))
-        y = LabelEncoder().fit_transform(y)
-        return X, to_categorical(y, num_classes=self.nb_of_label)
+    def __get_txt_feat(self,set):
+        X = self.msdi.load_txt(set)
+        print(np.shape(X))
+        return X
 
     # MFCC features
     def get_train_mfcc_data(self,N=None):
@@ -65,5 +64,11 @@ class DataReader():
         return self.__get_img_feat('test'), self.__get_target('test')
 
     # Text Features
-    def get_txt_features(self):
-        return self.__get_txt_feat_and_target()
+    def get_train_txt_features(self):
+        return self.__get_txt_feat('train'), self.__get_target('train')
+
+    def get_val_txt_features(self):
+        return self.__get_txt_feat('val'), self.__get_target('val')
+
+    def get_test_txt_features(self):
+        return self.__get_txt_feat('test'), self.__get_target('test')
