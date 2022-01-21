@@ -5,17 +5,20 @@ from baselineImage import BaselineImage
 from baselineAudio import BaselineAudio
 from baselineText import BaselineText
 from baselineMFCC import BaselineMFCC
+from lateModel import LateModel
+import pandas as pd
+import csv
+import time
 from baselineFusion import BaselineFusion
 
-
 BATCH_SIZE = 32
-EPOCHS = 5
+EPOCHS = 10
 NB_ITERATIONS = 2
 NB_SAMPLE = None #integer or None value for all the dataset
 
-GET_AND_SAVE_DATA = True
-DATA_TYPE = 'Text'  # 'Image' 'Audio' 'MFCC' 'Text' 'Fusion'
-
+GET_AND_SAVE_DATA = False
+DATA_TYPE = 'MFCC'  # 'Audio' 'MFCC' 'Text' 'Image' 'All' 'Fusion'
+MULTI_TYPE = 'Late' # 'Early', 'Late', 'Hybrid' None
 
 if DATA_TYPE=='Image':
     DATASET_PATH = ['baseline_img.npz']
@@ -42,8 +45,13 @@ elif DATA_TYPE=='Fusion':
     MODEL_CLASS = BaselineFusion
     MODEL_DIR = 'fusion_model'
     INPUT_SHAPE = [(200, 200, 3), 2048, 12*3]
-    
-else : print(f"Unvalid argument for DATA_TYPE")
+elif DATA_TYPE=='All':
+    if MULTI_TYPE=='Late':
+        MODEL_CLASS = LateModel
+        MODEL_DIR = 'late_model'
+    else: print(f"{MULTI_TYPE} not implemented")
+
+else: print(f"Invalid argument for DATA_TYPE")
 
 if __name__ == '__main__':
     data = DataReader()
@@ -57,7 +65,7 @@ if __name__ == '__main__':
             X_train, y_train = data.get_train_mfcc_data(N=NB_SAMPLE)
             X_val, y_val = data.get_val_mfcc_data(N=NB_SAMPLE)
             X_test, y_test = data.get_test_mfcc_data(N=NB_SAMPLE)
-            
+
             #save the data to a .npz file
             np.savez(dataset_path_baseline,X_train=X_train, X_val=X_val, X_test=X_test,
                                              y_train=y_train, y_val=y_val, y_test=y_test)
@@ -100,44 +108,90 @@ if __name__ == '__main__':
         else :
             print(f"Unvalid argument for DATA_TYPE")
 
-    # Loading data    
-    X_train = []
-    X_val = []
-    X_test = []
-    y_train = []
-    y_val = []
-    y_test = []
-    for path in DATASET_PATH :
-        print(f"Loading data from {path}...")
-        dataset_baseline = np.load(path, allow_pickle=True)
-        X_train.append(dataset_baseline['X_train'])
-        X_val.append(dataset_baseline['X_val'])
-        X_test.append(dataset_baseline['X_test'])
-        y_train.append(dataset_baseline['y_train'])
-        y_val.append(dataset_baseline['y_val'])
+    if MULTI_TYPE is None:
+        # # Loading data
+        # print(f"Loading data from {DATASET_PATH}...")
+        # dataset_baseline = np.load(DATASET_PATH)
+        # X_train = dataset_baseline['X_train']
+        # X_val = dataset_baseline['X_val']
+        # X_test = dataset_baseline['X_test']
+        # y_train = dataset_baseline['y_train']
+        # y_val = dataset_baseline['y_val']
+        # y_test = dataset_baseline['y_test']
+
+        # Loading data
+        X_train = []
+        X_val = []
+        X_test = []
+        y_train = []
+        y_val = []
+        y_test = []
+        for path in DATASET_PATH:
+            print(f"Loading data from {path}...")
+            dataset_baseline = np.load(path, allow_pickle=True)
+            X_train.append(dataset_baseline['X_train'])
+            X_val.append(dataset_baseline['X_val'])
+            X_test.append(dataset_baseline['X_test'])
+            y_train.append(dataset_baseline['y_train'])
+            y_val.append(dataset_baseline['y_val'])
+            y_test = dataset_baseline['y_test']
+        print(X_train)
+
+        print("Building model ...")
+
+        baseline = MODEL_CLASS(X_train, X_val, X_test, y_train, y_val, y_test,
+                            data.nb_of_label, batch_size=BATCH_SIZE, epochs=EPOCHS, input_shape=INPUT_SHAPE)
+
+        baseline.build_model()
+
+        baseline.baseline_result()
+
+        print("\nTraining model ...")
+        baseline.save_config_to_csv(MODEL_DIR, BATCH_SIZE, EPOCHS,NB_ITERATIONS, DATA_TYPE, DATASET_PATH, MODEL_CLASS, INPUT_SHAPE)
+
+        for k in range(NB_ITERATIONS):
+            print(f"Iteration {k}/{NB_ITERATIONS}")
+            try:baseline.load_model(MODEL_DIR)
+            except: print(f'Aucun model trouvé, un nouveau model sera sauvegardé sous le nom de : {MODEL_DIR}')
+            history = baseline.fit()
+            baseline.save_history_to_csv(MODEL_DIR, ITERATION=k)
+            baseline.evaluate()
+            baseline.save(MODEL_DIR)
+
+    elif MULTI_TYPE in ['Early', 'Late', 'Hybrid']:
+        X_train, X_val, X_test = [], [], []
+        for path in ['baseline_img.npz', 'baseline_deep.npz', 'baseline_mfcc.npz', 'baseline_txt.npz']
+            print(f"Loading data from {path}...")
+            dataset_baseline = np.load(path)
+            X_train.append(dataset_baseline['X_train'])
+            X_val.append(dataset_baseline['X_val'])
+            X_test.append(dataset_baseline['X_test'])
+
+        y_train = dataset_baseline['y_train']
+        y_val = dataset_baseline['y_val']
         y_test = dataset_baseline['y_test']
-    print(X_train)
 
-    print("Building model ...")
+        model = MODEL_CLASS(X_train, X_val, X_test, y_train, y_val, y_test,
+                               data.nb_of_label, batch_size=BATCH_SIZE, epochs=EPOCHS, input_shape=INPUT_SHAPE)
 
-    baseline = MODEL_CLASS(X_train, X_val, X_test, y_train, y_val, y_test,
-                        data.nb_of_label, batch_size=BATCH_SIZE, epochs=EPOCHS, input_shape=INPUT_SHAPE)
-        
-    baseline.build_model()
-    
-    baseline.baseline_result()
+        model.build_model()
 
-    print("\nTraining model ...")
-    baseline.save_config_to_csv(MODEL_DIR, BATCH_SIZE, EPOCHS,NB_ITERATIONS, DATA_TYPE, DATASET_PATH, MODEL_CLASS, INPUT_SHAPE)
+        model.baseline_result()
 
-    for k in range(NB_ITERATIONS):
-        print(f"Iteration {k}/{NB_ITERATIONS}")
-        try:baseline.load_model(MODEL_DIR)
-        except: print(f'Aucun model trouvé, un nouveau model sera sauvegardé sous le nom de : {MODEL_DIR}')
-        history = baseline.fit()
-        baseline.save_history_to_csv(MODEL_DIR, ITERATION=k)
-        baseline.evaluate()
-        baseline.save(MODEL_DIR)
+        print("\nTraining model ...")
+        model.save_config_to_csv(MODEL_DIR, BATCH_SIZE, EPOCHS, NB_ITERATIONS, DATA_TYPE, DATASET_PATH, MODEL_CLASS,
+                                    INPUT_SHAPE)
+
+        for k in range(NB_ITERATIONS):
+            print(f"Iteration {k}/{NB_ITERATIONS}")
+            try:model.load_model(MODEL_DIR)
+            except: print(f'Auncun model trouvé, un nouveau model sera sauvegarder sous le nom de : {MODEL_DIR}')
+            history = model.fit()
+            model.save_history_to_csv(MODEL_DIR, ITERATION=k)
+            model.evaluate()
+            model.save(MODEL_DIR)
+
+    else: print(f"Invalid argument for MULTI_TYPE")
 
 
 print('Done !')
