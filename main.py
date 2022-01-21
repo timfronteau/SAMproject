@@ -3,7 +3,7 @@ import numpy as np
 from dataReader import DataReader
 from baselineImage import BaselineImage
 from baselineAudio import BaselineAudio
-
+from baselineText import BaselineText
 from baselineMFCC import BaselineMFCC
 import pandas as pd
 import csv
