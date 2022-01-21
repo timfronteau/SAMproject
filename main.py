@@ -80,13 +80,21 @@ if __name__ == '__main__':
             # Text features
             dataset_path_baseline = 'baseline_txt.npz'
 
-            X, y = data.get_txt_features()
+            X_train0, y_train0 = data.get_train_txt_features()
+            X_val0, y_val0 = data.get_val_txt_features()
+            X_test0, y_test0 = data.get_test_txt_features()
 
-            val_size = int(X.shape[0]/10)
+            notnan_train = [type(i)==np.ndarray for i in X_train0]
+            notnan_val = [type(i) == np.ndarray for i in X_val0]
+            notnan_test = [type(i) == np.ndarray for i in X_test0]
 
-            X_train, y_train = X[:8*val_size], y[:8*val_size]
-            X_val, y_val = X[8*val_size:9*val_size], y[8*val_size:9*val_size]
-            X_test, y_test = X[9*val_size:], y[9*val_size:]
+            X_train1, y_train1 = np.array(X_train0, dtype=object)[notnan_train], np.array(y_train0, dtype=object)[notnan_train]
+            X_val1, y_val1 = np.array(X_val0, dtype=object)[notnan_val], np.array(y_val0, dtype=object)[notnan_val]
+            X_test1, y_test1 = np.array(X_test0, dtype=object)[notnan_test], np.array(y_test0, dtype=object)[notnan_test]
+
+            X_train, y_train = np.array(X_train1.tolist()), np.array(y_train1.tolist())
+            X_val, y_val = np.array(X_val1.tolist()), np.array(y_val1.tolist())
+            X_test, y_test = np.array(X_test1.tolist()), np.array(y_test1.tolist())
 
             # save the data to a .npz file
             np.savez(dataset_path_baseline, X_train=X_train, X_val=X_val, X_test=X_test,
