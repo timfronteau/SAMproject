@@ -6,6 +6,7 @@ from baselineAudio import BaselineAudio
 from baselineText import BaselineText
 from baselineMFCC import BaselineMFCC
 from lateModel import LateModel
+from hybridModel import HybridModel
 import pandas as pd
 import csv
 import time
@@ -13,14 +14,14 @@ from baselineFusion import BaselineFusion
 
 # Hyper-parameters
 BATCH_SIZE = 32
-EPOCHS = 10
+EPOCHS = 5
 NB_ITERATIONS = 2
 NB_SAMPLE = None  # integer or None value for all the dataset
 
 # Data to use, Model to run
 GET_AND_SAVE_DATA = False  # True, False
-DATA_TYPE = 'MFCC'  # 'Audio' 'MFCC' 'Text' 'Image' 'All' 'Fusion'
-MULTI_TYPE = 'Late' # 'Early', 'Late', 'Hybrid', None
+DATA_TYPE = 'All'  # 'Audio' 'MFCC' 'Text' 'Image' 'All' 'Fusion'
+MULTI_TYPE = "Hybrid"  # 'Early', 'Late', 'Hybrid', None
 
 if DATA_TYPE == 'Image':
     DATASET_PATH = ['baseline_img.npz']
@@ -42,15 +43,21 @@ elif DATA_TYPE == 'Text':
     MODEL_CLASS = BaselineText
     MODEL_DIR = 'txt_model'
     INPUT_SHAPE = 5000
-elif DATA_TYPE=='Fusion':
+elif DATA_TYPE == 'Fusion':
     DATASET_PATH = ['baseline_img.npz','baseline_deep.npz','baseline_mfcc.npz']
     MODEL_CLASS = BaselineFusion
     MODEL_DIR = 'fusion_model'
     INPUT_SHAPE = [(200, 200, 3), 2048, 12*3]
-elif DATA_TYPE=='All':
-    if MULTI_TYPE=='Late':
+elif DATA_TYPE == 'All':
+    if MULTI_TYPE == 'Late':
+        DATASET_PATH = ['baseline_img.npz', 'baseline_deep.npz', 'baseline_mfcc.npz', 'baseline_txt.npz']
         MODEL_CLASS = LateModel
         MODEL_DIR = 'late_model'
+        INPUT_SHAPE = [(200, 200, 3), 2048, 12 * 3, 5000]
+    elif MULTI_TYPE == 'Hybrid':
+        DATASET_PATH = ['baseline_img.npz', 'baseline_deep.npz', 'baseline_mfcc.npz', 'baseline_txt.npz']
+        MODEL_CLASS = HybridModel
+        MODEL_DIR = 'hybrid_model'
         INPUT_SHAPE = [(200, 200, 3), 2048, 12 * 3, 5000]
     else:
         print(f"{MULTI_TYPE} not implemented")
@@ -158,7 +165,7 @@ if __name__ == '__main__':
                                     INPUT_SHAPE)
 
         for k in range(NB_ITERATIONS):
-            print(f"Iteration {k}/{NB_ITERATIONS}")
+            print(f"Iteration {k+1}/{NB_ITERATIONS}")
             try:baseline.load_model(MODEL_DIR)
             except: print(f'Aucun model trouvé, un nouveau model sera sauvegardé sous le nom de : {MODEL_DIR}')
             history = baseline.fit()
@@ -185,20 +192,26 @@ if __name__ == '__main__':
 
         model.build_model()
 
-        # model.baseline_result()
+        model.baseline_result()
 
         print("\nTraining model ...")
         model.save_config_to_csv(MODEL_DIR, BATCH_SIZE, EPOCHS, NB_ITERATIONS, DATA_TYPE, DATASET_PATH, MODEL_CLASS,
                                  INPUT_SHAPE)
 
         for k in range(NB_ITERATIONS):
+            if MULTI_TYPE == "Late":
+                break
             print(f"Iteration {k + 1}/{NB_ITERATIONS}")
             try:
                 model.load_model(MODEL_DIR)
             except:
-                print(f'Auncun model trouvé, un nouveau model sera sauvegardé sous le nom de : {MODEL_DIR}')
+                print(f'Aucun model trouvé, un nouveau model sera sauvegardé sous le nom de : {MODEL_DIR}')
             history = model.fit()
             model.save_history_to_csv(MODEL_DIR, ITERATION=k)
+            model.evaluate()
+            model.save(MODEL_DIR)
+
+        if MULTI_TYPE == "Late":
             model.evaluate()
             model.save(MODEL_DIR)
 

@@ -1,4 +1,4 @@
-from keras.layers import Dense, Dropout, Average
+from keras.layers import Dense, Dropout, Average, Concatenate
 from keras.models import Model
 
 from baseline import Baseline
@@ -8,7 +8,7 @@ from baselineMFCC import BaselineMFCC
 from baselineText import BaselineText
 
 
-class LateModel(Baseline):
+class HybridModel(Baseline):
     def __init__(self, X_train, X_val, X_test, y_train, y_val, y_test, nb_of_label, batch_size=16, epochs=10, input_shape=5000):
         super().__init__(X_train, X_val, X_test, y_train, y_val, y_test, nb_of_label, batch_size=batch_size, epochs=epochs, input_shape=input_shape)
         self.imageModel = BaselineImage(X_train, X_val, X_test, y_train, y_val, y_test,
@@ -50,15 +50,15 @@ class LateModel(Baseline):
         print(outputs)
         input_mod = Model(inputs=inputs, outputs=outputs)
         print(input_mod.layers)
-        avg = Average()(input_mod.outputs)
-        # d1 = Dense(32, activation='relu')(avg)
-        # drop1 = Dropout(0.1)(d1)
-        # d2 = Dense(64, activation='relu')(drop1)
-        # drop2 = Dropout(0.1)(d2)
-        # d3 = Dense(32, activation='relu')(drop2)
-        # drop3 = Dropout(0.1)(d3)
-        # d4 = Dense(self.nb_of_label, activation='softmax')(drop3)
-        late_model = Model(inputs=inputs, outputs=avg)  # avg d4
+        cct = Concatenate()(input_mod.outputs)
+        d1 = Dense(64, activation='relu')(cct)
+        drop1 = Dropout(0.1)(d1)
+        d2 = Dense(64, activation='relu')(drop1)
+        drop2 = Dropout(0.1)(d2)
+        d3 = Dense(32, activation='relu')(drop2)
+        drop3 = Dropout(0.1)(d3)
+        d4 = Dense(self.nb_of_label, activation='softmax')(drop3)
+        late_model = Model(inputs=inputs, outputs=d4)  # avg d4 cct
 
         late_model.compile(loss='categorical_crossentropy', optimizer='sgd', metrics=['accuracy'])
 
