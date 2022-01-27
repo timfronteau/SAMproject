@@ -32,7 +32,9 @@ class Msdi():
 
         df = pd.merge(df_msdi, df_text, on='msd_track_id', how='left')
 
-        df['bow'].replace({np.nan:np.zeros(5000)})
+        for idx, elt in enumerate(df['bow']):
+            if type(elt) != np.ndarray:
+                df['bow'].iat[idx] = np.zeros(5000)
         return df
 
     def get_nb_of_entry(self):
