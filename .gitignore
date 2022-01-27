@@ -20,7 +20,7 @@ msdi/
 img_model_conv/variables/
 img_model_dense/variables/
 img_model/variables/
-*.index
+deep_model/variables/
 mfcc_model/variables/
 txt_model/variables/
 
