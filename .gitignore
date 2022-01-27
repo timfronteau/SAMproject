@@ -16,6 +16,12 @@ misc/
 msdi/
 *.zip
 *.npz
+*.pb
+img_model_conv/variables/
+img_model_dense/variables/
+deep_model/variables/
+mfcc_model/variables/
+txt_model/variables/
 
 msx_lyrics_genre.txt
 mxm_dataset_train.txt
