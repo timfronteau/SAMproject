@@ -21,7 +21,6 @@ class LateModel(Baseline):
                         nb_of_label, batch_size, epochs, 12*3)
         self.textModel = BaselineText(X_train, X_val, X_test, y_train, y_val, y_test,
                         nb_of_label, batch_size, epochs, 5000)
-        self.model = Functional()
 
     def build_model(self):
         # big_input_shape = self.imageModel.input_shape + self.audioModel.input_shape + self.MFCCModel.input_shape + self.textModel.input_shape
@@ -31,8 +30,12 @@ class LateModel(Baseline):
         # mfcc = Model(inputs=self.MFCCModel.model.input, outputs=self.MFCCModel.model.output)
         # txt = Model(inputs=self.textModel.model.input, outputs=self.textModel.model.output)
         models = [self.imageModel.model, self.audioModel.model, self.MFCCModel.model, self.textModel.model]
+        print(models)
+        print([m.layers for m in models])
         inputs = [m.layers[0].input for m in models]
+        print(inputs)
         outputs = [m.layers[-1].output for m in models]
+        print(outputs)
         input_mod = Model(inputs=inputs, outputs=outputs)
         avg = Average()(input_mod)
         d1 = Dense(32, activation='relu')(avg)
@@ -45,6 +48,8 @@ class LateModel(Baseline):
         late_model = Model(inputs=inputs, outputs=d4)
 
         late_model.compile(loss='categorical_crossentropy', optimizer='sgd', metrics=['accuracy'])
+
+        print(late_model.summary())
 
         self.model = late_model
 

@@ -14,28 +14,28 @@ from baselineFusion import BaselineFusion
 BATCH_SIZE = 32
 EPOCHS = 10
 NB_ITERATIONS = 2
-NB_SAMPLE = None #integer or None value for all the dataset
+NB_SAMPLE = None  # integer or None value for all the dataset
 
-GET_AND_SAVE_DATA = False
+GET_AND_SAVE_DATA = False  # True, False
 DATA_TYPE = 'MFCC'  # 'Audio' 'MFCC' 'Text' 'Image' 'All' 'Fusion'
 MULTI_TYPE = 'Late' # 'Early', 'Late', 'Hybrid' None
 
-if DATA_TYPE=='Image':
+if DATA_TYPE == 'Image':
     DATASET_PATH = ['baseline_img.npz']
     MODEL_CLASS = BaselineImage
     MODEL_DIR = 'img_model'
     INPUT_SHAPE = (200, 200, 3)
-elif DATA_TYPE=='Audio':
+elif DATA_TYPE == 'Audio':
     DATASET_PATH = ['baseline_deep.npz']
     MODEL_CLASS = BaselineAudio
     MODEL_DIR = 'deep_model'
     INPUT_SHAPE = 2048
-elif DATA_TYPE=='MFCC':
+elif DATA_TYPE == 'MFCC':
     DATASET_PATH = ['baseline_mfcc.npz']
     MODEL_CLASS = BaselineMFCC
     MODEL_DIR = 'mfcc_model'
     INPUT_SHAPE = 12*3
-elif DATA_TYPE=='Text':
+elif DATA_TYPE == 'Text':
     DATASET_PATH = ['baseline_txt.npz']
     MODEL_CLASS = BaselineText
     MODEL_DIR = 'txt_model'
@@ -49,12 +49,14 @@ elif DATA_TYPE=='All':
     if MULTI_TYPE=='Late':
         MODEL_CLASS = LateModel
         MODEL_DIR = 'late_model'
+        INPUT_SHAPE = [(200, 200, 3), 2048, 12*3, 5000]
     else: print(f"{MULTI_TYPE} not implemented")
 
 else: print(f"Invalid argument for DATA_TYPE")
 
 if __name__ == '__main__':
     data = DataReader()
+
     if GET_AND_SAVE_DATA:
         print("Getting data ...")
 
@@ -106,7 +108,7 @@ if __name__ == '__main__':
             np.savez(dataset_path_baseline, X_train=X_train, X_val=X_val, X_test=X_test,
                      y_train=y_train, y_val=y_val, y_test=y_test)
         else :
-            print(f"Unvalid argument for DATA_TYPE")
+            print(f"Invalid argument for DATA_TYPE")
 
     if MULTI_TYPE is None:
         # # Loading data
@@ -159,8 +161,9 @@ if __name__ == '__main__':
             baseline.save(MODEL_DIR)
 
     elif MULTI_TYPE in ['Early', 'Late', 'Hybrid']:
+        print(f"\nPreparing data for {MULTI_TYPE} model training and evaluation...")
         X_train, X_val, X_test = [], [], []
-        for path in ['baseline_img.npz', 'baseline_deep.npz', 'baseline_mfcc.npz', 'baseline_txt.npz']
+        for path in ['baseline_img.npz', 'baseline_deep.npz', 'baseline_mfcc.npz', 'baseline_txt.npz']:
             print(f"Loading data from {path}...")
             dataset_baseline = np.load(path)
             X_train.append(dataset_baseline['X_train'])
@@ -176,11 +179,11 @@ if __name__ == '__main__':
 
         model.build_model()
 
-        model.baseline_result()
+        # model.baseline_result()
 
         print("\nTraining model ...")
         model.save_config_to_csv(MODEL_DIR, BATCH_SIZE, EPOCHS, NB_ITERATIONS, DATA_TYPE, DATASET_PATH, MODEL_CLASS,
-                                    INPUT_SHAPE)
+                                 INPUT_SHAPE)
 
         for k in range(NB_ITERATIONS):
             print(f"Iteration {k}/{NB_ITERATIONS}")
@@ -191,7 +194,8 @@ if __name__ == '__main__':
             model.evaluate()
             model.save(MODEL_DIR)
 
-    else: print(f"Invalid argument for MULTI_TYPE")
+    else:
+        print(f"Invalid argument for MULTI_TYPE")
 
 
 print('Done !')
