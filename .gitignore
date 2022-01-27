@@ -23,6 +23,8 @@ img_model/variables/
 deep_model/variables/
 mfcc_model/variables/
 txt_model/variables/
+hybrid_model/variables/
+late_model/variables/
 
 msx_lyrics_genre.txt
 mxm_dataset_train.txt
