@@ -7,9 +7,10 @@ from baselineText import BaselineText
 from baselineMFCC import BaselineMFCC
 from lateModel import LateModel
 from hybridModel import HybridModel
-import pandas as pd
-import csv
-import time
+from earlyModel import EarlyModel
+# import pandas as pd
+# import csv
+# import time
 from baselineFusion import BaselineFusion
 
 # Hyper-parameters
@@ -21,7 +22,7 @@ NB_SAMPLE = None  # integer or None value for all the dataset
 # Data to use, Model to run
 GET_AND_SAVE_DATA = False  # True, False
 DATA_TYPE = 'All'  # 'Audio' 'MFCC' 'Text' 'Image' 'All' 'Fusion'
-MULTI_TYPE = "Hybrid"  # 'Early', 'Late', 'Hybrid', None
+MULTI_TYPE = "Early"  # 'Early', 'Late', 'Hybrid', None
 
 if DATA_TYPE == 'Image':
     DATASET_PATH = ['baseline_img.npz']
@@ -58,6 +59,11 @@ elif DATA_TYPE == 'All':
         DATASET_PATH = ['baseline_img.npz', 'baseline_deep.npz', 'baseline_mfcc.npz', 'baseline_txt.npz']
         MODEL_CLASS = HybridModel
         MODEL_DIR = 'hybrid_model'
+        INPUT_SHAPE = [(200, 200, 3), 2048, 12 * 3, 5000]
+    elif MULTI_TYPE == 'Early':
+        DATASET_PATH = ['baseline_img.npz', 'baseline_deep.npz', 'baseline_mfcc.npz', 'baseline_txt.npz']
+        MODEL_CLASS = EarlyModel
+        MODEL_DIR = 'early_model'
         INPUT_SHAPE = [(200, 200, 3), 2048, 12 * 3, 5000]
     else:
         print(f"{MULTI_TYPE} not implemented")
