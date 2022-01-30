@@ -45,7 +45,10 @@ class Model():
         self.model = load_model(f"saved_model/{path}")
     
     def save(self,path):
-        self.model.save(f"saved_model/{path}")
+        try : self.model.save(f"saved_model/{path}")
+        except : 
+            if not os.path.exists('saved_model'):
+                os.makedirs('saved_model')
 
     def evaluate(self):
         print('Model evaluation:')

@@ -2,7 +2,7 @@ import numpy as np
 from msdi import Msdi
 from tensorflow.keras.utils import to_categorical
 from sklearn.preprocessing import LabelEncoder
-
+import os
 
 class DataReader():
     def __init__(self, msdi_path='msdi'):
@@ -73,7 +73,9 @@ class DataReader():
     def __get_test_txt_features(self):
         return self.__get_txt_feat('test'), self.__get_target('test')
 
-    def get_dataset(self, DATA_TYPE:str, NB_SAMPLE):
+    def get_dataset(self, DATA_TYPE:str, NB_SAMPLE):       
+        if not os.path.exists('dataset'):
+            os.makedirs('dataset')
         if DATA_TYPE == 'MFCC':
             # MFCC features
             dataset_path_baseline = 'dataset/mfcc.npz'
