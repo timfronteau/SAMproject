@@ -1,42 +1,33 @@
-from keras.layers import Dense, Dropout, Average, Concatenate, Input
+from keras.layers import Dense, Dropout, Concatenate, Input
 from keras.models import Model
+from torch import embedding
 
-from baseline import Baseline
-from baselineAudio import BaselineAudio
-from baselineImage import BaselineImage
-from baselineMFCC import BaselineMFCC
-from baselineText import BaselineText
+from multiModel import MultiModel
 
-class EarlyModel(Baseline):
+class EarlyModel(MultiModel):
     def __init__(self, X_train, X_val, X_test, y_train, y_val, y_test, nb_of_label, batch_size=16, epochs=10, input_shape=5000):
         super().__init__(X_train, X_val, X_test, y_train, y_val, y_test, nb_of_label, batch_size=batch_size, epochs=epochs, input_shape=input_shape)
-        self.imageModel = BaselineImage(X_train, X_val, X_test, y_train, y_val, y_test,
-                        nb_of_label, batch_size, epochs, (200, 200, 3))
+        self.model_name = 'model_early'
 
     def build_model(self):
-
-        self.imageModel.load_model("img_model")
-        m1 = Model(self.imageModel.model.inputs, self.imageModel.model.output, name=f"img_model")
-        i2 = Input(shape=2048)
-        i3 = Input(shape=12*3)
-        i4 = Input(shape=5000)
-        inputs = [m1.layers[0].input, i2, i3, i4]
-        outputs = [m1.layers[8].output, i2, i3, i4]
-        print(m1.layers[8].output)
-        print(outputs)
-        input_mod = Model(inputs=inputs, outputs=outputs)
-        cct = Concatenate()(input_mod.outputs)
-        d1 = Dense(64, activation='relu')(cct)
-        drop1 = Dropout(0.1)(d1)
-        d2 = Dense(64, activation='relu')(drop1)
-        drop2 = Dropout(0.1)(d2)
-        d3 = Dense(32, activation='relu')(drop2)
-        drop3 = Dropout(0.1)(d3)
-        d4 = Dense(self.nb_of_label, activation='softmax')(drop3)
-        late_model = Model(inputs=inputs, outputs=d4)  # avg d4 cct
+        clfs = self._build_sub_model()
+        img_idx = 0
+        inputs = [clf.layers[0].input for clf in clfs]        
+        inputs[img_idx] = clfs[img_idx].layers[0].input                    
+        embedding1 = [clf.layers[0].output for clf in clfs]    
+        embedding1[img_idx] = clfs[img_idx].layers[8].output   
+        
+        embedding2 = Model(inputs=inputs, outputs=embedding1, name='early_embedding_2')
+       
+        cct = Concatenate(axis=1, name='early_concat')(embedding2.outputs)        
+        d1 = Dense(2048, activation='relu', name='early_dense_1')(cct)
+        drop1 = Dropout(0.3, name='early_dropout_1')(d1)
+        d2 = Dense(256, activation='relu', name='early_dense_2')(drop1)
+        drop2 = Dropout(0.3, name='early_dropout_2')(d2)
+        d3 = Dense(32, activation='relu', name='early_dense_3')(drop2)
+        drop3 = Dropout(0.3, name='early_dropout_3')(d3)
+        output = Dense(self.nb_of_label, activation='softmax', name='early_dense_4')(drop3)
+        late_model = Model(inputs=inputs, outputs=output)
 
         late_model.compile(loss='categorical_crossentropy', optimizer='sgd', metrics=['accuracy'])
-
-        print(late_model.summary())
-
         self.model = late_model
