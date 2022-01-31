@@ -1,0 +1,10 @@
+"DATE = 01/31/2022, 22:57:36"
+BATCH_SIZE = 32
+EPOCHS = 5
+NB_ITERATIONS = 1
+DATA_TYPE = All
+"DATASET_PATH = ['dataset/img.npz', 'dataset/deep.npz', 'dataset/mfcc.npz', 'dataset/txt.npz']"
+MODEL_CLASS = <class 'hybridModel.HybridModel'>
+MODEL_DIR = saved_model/hybrid_model
+"INPUT_SHAPE = [(200, 200, 3), 2048, 36, 5000]"
+epochs,loss,accuracy,val_loss,val_accuracy
