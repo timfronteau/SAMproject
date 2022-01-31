@@ -1,67 +1,31 @@
-from keras.layers import Dense, Dropout, Average, Concatenate
+
+from keras.layers import Dense, Dropout, Concatenate
 from keras.models import Model
-
-from baseline import Baseline
-from baselineAudio import BaselineAudio
-from baselineImage import BaselineImage
-from baselineMFCC import BaselineMFCC
-from baselineText import BaselineText
+from multiModel import MultiModel
 
 
-class HybridModel(Baseline):
-    def __init__(self, X_train, X_val, X_test, y_train, y_val, y_test, nb_of_label, batch_size=16, epochs=10, input_shape=5000):
-        super().__init__(X_train, X_val, X_test, y_train, y_val, y_test, nb_of_label, batch_size=batch_size, epochs=epochs, input_shape=input_shape)
-        self.imageModel = BaselineImage(X_train, X_val, X_test, y_train, y_val, y_test,
-                        nb_of_label, batch_size, epochs, (200, 200, 3))
-        self.audioModel = BaselineAudio(X_train, X_val, X_test, y_train, y_val, y_test,
-                        nb_of_label, batch_size, epochs, 2048)
-        self.MFCCModel = BaselineMFCC(X_train, X_val, X_test, y_train, y_val, y_test,
-                        nb_of_label, batch_size, epochs, 12*3)
-        self.textModel = BaselineText(X_train, X_val, X_test, y_train, y_val, y_test,
-                        nb_of_label, batch_size, epochs, 5000)
+class HybridModel(MultiModel):
+    def __init__(self, X_train, X_val, X_test, y_train, y_val, y_test, nb_of_label, batch_size=16, epochs=10, input_shape=2048):
+        super().__init__(X_train, X_val, X_test, y_train, y_val, y_test, nb_of_label, batch_size, epochs, input_shape)
+        self.model_name = 'model_hybrid'
 
-    def build_model(self):
-        # big_input_shape = self.imageModel.input_shape + self.audioModel.input_shape + self.MFCCModel.input_shape + self.textModel.input_shape
-        # m.add(Input(shape=big_input_shape))
-        # img = Model(inputs=self.imageModel.model.input, outputs=self.imageModel.model.output)
-        # aud = Model(inputs=self.audioModel.model.input, outputs=self.audioModel.model.output)
-        # mfcc = Model(inputs=self.MFCCModel.model.input, outputs=self.MFCCModel.model.output)
-        # txt = Model(inputs=self.textModel.model.input, outputs=self.textModel.model.output)
-        # models = [self.imageModel.model, self.audioModel.model, self.MFCCModel.model, self.textModel.model]
+    def build_model(self): 
+        clfs = self._build_sub_model(trainable=True) 
+        embeddings1 = [Dense(self.nb_of_label, activation='relu', name=f'hybrid_embeddings_1_{idx}')(clf.layers[-1].output) for idx,clf in enumerate(clfs)]
+        embeddings2 = [Dense(self.nb_of_label, activation='relu', name=f'hybrid_embeddings_2_{idx}')(emb) for idx,emb in enumerate(embeddings1)]
+        merged = Concatenate(axis=1, name='hybrid_concat')(embeddings2)
+        
+        dense1 = Dense(self.nb_clf * self.nb_of_label, activation='relu', name='hybrid_dense_1')(merged)
+        dropout1 = Dropout(0.05, name='hybrid_dropout_1')(dense1)
+        dense2 = Dense(self.nb_clf * self.nb_of_label, activation='relu', name='hybrid_dense_2')(dropout1)
+        dropout2 = Dropout(0.05, name='hybrid_dropout_2')(dense2)
+        dense3 = Dense(32, activation = 'relu', name='hybrid_dense_3')(dropout2)
+        dropout3 = Dropout(0.05, name='hybrid_dropout_3')(dense3)
+        output = Dense(self.nb_of_label, activation='softmax', name='hybrid_output')(dropout3)
 
-        self.imageModel.load_model("img_model")
-        m1 = Model(self.imageModel.model.inputs, self.imageModel.model.output, name=f"img_model")
-        self.audioModel.load_model("deep_model")
-        m2 = Model(self.audioModel.model.inputs, self.audioModel.model.output, name=f"deep_model")
-        self.MFCCModel.load_model("mfcc_model")
-        m3 = Model(self.MFCCModel.model.inputs, self.MFCCModel.model.output, name=f'mfcc_model')
-        self.textModel.load_model("txt_model")
-        m4 = Model(self.textModel.model.inputs, self.textModel.model.output, name=f'txt_model')
-        m1.trainable = False
-        m2.trainable = False
-        m3.trainable = False
-        m4.trainable = False
-        models = [m1, m2, m3, m4]
-        print(models)
-        print([m.layers for m in models])
-        inputs = [m.layers[0].input for m in models]
-        print(inputs)
-        outputs = [m.layers[-1].output for m in models]
-        print(outputs)
-        input_mod = Model(inputs=inputs, outputs=outputs)
-        print(input_mod.layers)
-        cct = Concatenate()(input_mod.outputs)
-        d1 = Dense(64, activation='relu')(cct)
-        drop1 = Dropout(0.1)(d1)
-        d2 = Dense(64, activation='relu')(drop1)
-        drop2 = Dropout(0.1)(d2)
-        d3 = Dense(32, activation='relu')(drop2)
-        drop3 = Dropout(0.1)(d3)
-        d4 = Dense(self.nb_of_label, activation='softmax')(drop3)
-        late_model = Model(inputs=inputs, outputs=d4)  # avg d4 cct
+        inputs = [m.layers[0].input for m in clfs]
+        hybrid_model = Model(inputs=inputs, outputs=output, name=self.model_name)
 
-        late_model.compile(loss='categorical_crossentropy', optimizer='sgd', metrics=['accuracy'])
-
-        print(late_model.summary())
-
-        self.model = late_model
+        hybrid_model.compile(optimizer='adam',loss='categorical_crossentropy', metrics=['accuracy']) # , optimizer=opt
+        
+        self.model = hybrid_model

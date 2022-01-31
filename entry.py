@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 from msdi import Msdi
 
 class Entry(Msdi):
-
     def __init__(self, idx):
         super().__init__()
         self.idx = idx

@@ -14,8 +14,9 @@ venv.bak/
 maps_composers/
 misc/
 msdi/
+msdi_img/
 *.zip
-*.npz
+
 *.pb
 img_model_conv/variables/
 img_model_dense/variables/
@@ -35,6 +36,12 @@ composers_classification/wavelets
 composers_classification/spectrogram
 *.ini
 *.pickle
-
+composers_classification/
 __pycache__
 test.py
+
+checkpoint
+dataset/deep.npz
+dataset/mfcc.npz
+dataset/img.npz
+dataset/txt.npz
