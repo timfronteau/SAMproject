@@ -10,7 +10,7 @@ class HybridModel(MultiModel):
         self.model_name = 'model_hybrid'
 
     def build_model(self): 
-        clfs = self._build_sub_model() 
+        clfs = self._build_sub_model(trainable=True) 
         embeddings1 = [Dense(self.nb_of_label, activation='relu', name=f'hybrid_embeddings_1_{idx}')(clf.layers[-1].output) for idx,clf in enumerate(clfs)]
         embeddings2 = [Dense(self.nb_of_label, activation='relu', name=f'hybrid_embeddings_2_{idx}')(emb) for idx,emb in enumerate(embeddings1)]
         merged = Concatenate(axis=1, name='hybrid_concat')(embeddings2)

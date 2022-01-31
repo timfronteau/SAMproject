@@ -4,7 +4,7 @@ from utils import extract_config, get_dataset_from_file
 
 # Hyper-parameters
 BATCH_SIZE = 32
-EPOCHS = 1
+EPOCHS = 5
 NB_ITERATIONS = 1
 NB_SAMPLE = None  # integer or None value for all the dataset
 
@@ -12,7 +12,7 @@ NB_SAMPLE = None  # integer or None value for all the dataset
 GET_AND_SAVE_DATA = False  # True, False
 SAVE_MODEL = True  # True, False
 DATA_TYPE = 'All'  # 'Audio' 'MFCC' 'Text' 'Image' 'All'
-MULTI_TYPE = "Late"  # 'Early', 'Late', 'Hybrid', 'Uni'
+MULTI_TYPE = "Early"  # 'Early', 'Late', 'Hybrid', 'Uni'
 
 DATASET_PATH, MODEL_CLASS, MODEL_DIR,  INPUT_SHAPE = extract_config(DATA_TYPE, MULTI_TYPE)
 
@@ -51,6 +51,7 @@ if __name__ == '__main__':
             if SAVE_MODEL : model.save(MODEL_DIR)
         model.plot_confusion_matrix(X_test, y_test)  
         model.plot_tree_model()
+        print(model.summary())
         model.classification_report(X_test, y_test, save=True)
 
     else:

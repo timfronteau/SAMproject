@@ -1,6 +1,5 @@
 from keras.layers import Dense, Dropout, Concatenate, Input
 from keras.models import Model
-from torch import embedding
 
 from multiModel import MultiModel
 
@@ -10,7 +9,7 @@ class EarlyModel(MultiModel):
         self.model_name = 'model_early'
 
     def build_model(self):
-        clfs = self._build_sub_model()
+        clfs = self._build_sub_model(trainable=True)
         img_idx = 0
         inputs = [clf.layers[0].input for clf in clfs]        
         inputs[img_idx] = clfs[img_idx].layers[0].input                    
@@ -27,7 +26,7 @@ class EarlyModel(MultiModel):
         d3 = Dense(32, activation='relu', name='early_dense_3')(drop2)
         drop3 = Dropout(0.3, name='early_dropout_3')(d3)
         output = Dense(self.nb_of_label, activation='softmax', name='early_dense_4')(drop3)
-        late_model = Model(inputs=inputs, outputs=output)
+        early_model = Model(inputs=inputs, outputs=output)
 
-        late_model.compile(loss='categorical_crossentropy', optimizer='sgd', metrics=['accuracy'])
-        self.model = late_model
+        early_model.compile(loss='categorical_crossentropy', optimizer='sgd', metrics=['accuracy'])
+        self.model = early_model

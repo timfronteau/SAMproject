@@ -88,7 +88,7 @@ class Model():
         return self.model.summary()
 
     def plot_tree_model(self):
-        print(f'Saving confusion matrix ...', end='')
+        print(f'Saving tree model ...', end='')
         plot_model(model=self.model, to_file=f'figures/tree_model/{self.model_name}_tree.png', dpi=300, show_shapes=True)
         print('done')
     

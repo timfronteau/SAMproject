@@ -10,7 +10,7 @@ class MultiModel(Model):
         self.DATA_TYPE_LIST = ['Image', 'Audio', 'MFCC', 'Text']        
         self.nb_clf = len(self.DATA_TYPE_LIST) # number of classifiers`
 
-    def _build_sub_model(self):
+    def _build_sub_model(self, trainable:bool=False):
         """"
         Cette methode permet de creer de récupérer les classifieurs unimodaux"""
         clfs = []
@@ -24,7 +24,7 @@ class MultiModel(Model):
                 print(f'Aucun model trouvé, un nouveau model sera sauvegardé sous le nom de : {MODEL_DIR}')
                 model.fit()
             m = models.Model(model.model.inputs, model.model.output, name=f'{MODEL_DIR}')
-            m.trainable = False
+            m.trainable = trainable
             clfs.append(m)
         return clfs
 
