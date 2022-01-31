@@ -1,0 +1,15 @@
+"DATE = 01/31/2022, 23:01:06"
+BATCH_SIZE = 32
+EPOCHS = 5
+NB_ITERATIONS = 1
+DATA_TYPE = All
+"DATASET_PATH = ['dataset/img.npz', 'dataset/deep.npz', 'dataset/mfcc.npz', 'dataset/txt.npz']"
+MODEL_CLASS = <class 'earlyModel.EarlyModel'>
+MODEL_DIR = saved_model/early_model
+"INPUT_SHAPE = [(200, 200, 3), 2048, 36, 5000]"
+epochs,loss,accuracy,val_loss,val_accuracy
+0,,0.024458682164549828,,0.025641025975346565
+1,,0.024084553122520447,,0.025641025975346565
+2,,0.024084553122520447,,0.025641025975346565
+3,,0.024084553122520447,,0.025641025975346565
+4,,0.024084553122520447,,0.025641025975346565
